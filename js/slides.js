@@ -188,15 +188,20 @@
     orbit(blocks, meta) {
       const line = blocks.find((b) => b.type === 'p');
       const words = (line ? line.text : '').split('→').map((s) => s.trim()).filter(Boolean);
-      const items = words.map((w) => {
+      // Номер перед словом — иначе на кольце не видно, что за чем идёт.
+      const items = words.map((w, i) => {
         const accent = /^==.*==$/.test(w);
         const text = accent ? w.slice(2, -2) : w;
-        return `<span class="orbit-word${accent ? ' accent' : ''}">${MD.escapeHtml(text)}</span>`;
+        return `<span class="orbit-word${accent ? ' accent' : ''}">` +
+          `<i class="orbit-num">${pad2(i + 1)}</i>${MD.escapeHtml(text)}</span>`;
       }).join('');
       return `<div class="orbit-wrap">
         <h1 class="title reveal" style="--i:0">${MD.inline(meta.title || '')}</h1>
         <div class="orbit" aria-label="${MD.escapeHtml(words.join(' → '))}">
-          <svg class="orbit-path" aria-hidden="true"><ellipse /></svg>
+          <svg class="orbit-path" aria-hidden="true">
+            <ellipse class="orbit-line" />
+            <ellipse class="orbit-runner" />
+          </svg>
           ${items}
         </div>
       </div>`;
@@ -265,7 +270,8 @@
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const svg = box.querySelector('.orbit-path');
-    const ellipse = svg && svg.querySelector('ellipse');
+    const ellipses = svg ? [...svg.querySelectorAll('ellipse')] : [];
+    const runner = svg && svg.querySelector('.orbit-runner');
     let lastW = 0;
     let lastH = 0;
 
@@ -276,15 +282,26 @@
       const ry = h / 2 - 30;
 
       // Рисуем эллипс в реальных пикселях: если растянуть SVG,
-      // пунктир вытянется по горизонтали и станет неровным.
-      if (ellipse && (w !== lastW || h !== lastH)) {
+      // бегущий сегмент вытянется по горизонтали и станет неровным.
+      if (ellipses.length && (w !== lastW || h !== lastH)) {
         lastW = w;
         lastH = h;
         svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-        ellipse.setAttribute('cx', w / 2);
-        ellipse.setAttribute('cy', h / 2);
-        ellipse.setAttribute('rx', rx);
-        ellipse.setAttribute('ry', ry);
+        ellipses.forEach((e) => {
+          e.setAttribute('cx', w / 2);
+          e.setAttribute('cy', h / 2);
+          e.setAttribute('rx', rx);
+          e.setAttribute('ry', ry);
+        });
+        // Длина эллипса по Рамануджану — нужна, чтобы задать светлячку
+        // короткий штрих и промежуток ровно в остальную длину кольца.
+        const len = Math.PI * (3 * (rx + ry) -
+          Math.sqrt((3 * rx + ry) * (rx + 3 * ry)));
+        if (runner) {
+          const dash = Math.max(40, len * 0.06);
+          runner.style.strokeDasharray = `${dash} ${len - dash}`;
+          runner.style.setProperty('--orbit-len', len);
+        }
       }
 
       words.forEach((el, i) => {
@@ -377,6 +394,8 @@
     el.classList.add('active');
     startCoverTyping(el);
     startOrbit(el);
+    // Слайд может погасить фоновые точки: dots: false в frontmatter.
+    document.body.classList.toggle('no-dots', slides[cur].meta.dots === 'false');
     counter.textContent = pad2(cur + 1) + ' / ' + pad2(els.length);
     bar.style.width = ((cur + 1) / els.length) * 100 + '%';
     document.title = pad2(cur + 1) + ' · ' + (slides[cur].meta.title || 'Слайд');

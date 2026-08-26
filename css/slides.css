@@ -203,30 +203,35 @@
   width: min(88vw, 1180px);
   height: clamp(220px, 42vh, 420px);
 }
-/* Линия орбиты. Пунктир бежит по часовой стрелке — в ту же сторону,
-   что и слова, поэтому направление цикла видно даже на стоп-кадре. */
+/* Линия орбиты — сплошная. По ней бежит короткий светлый сегмент
+   в ту же сторону, что и слова: он и показывает направление цикла. */
 .orbit-path {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
-.orbit-path ellipse {
-  fill: none;
-  stroke: var(--text-muted);
+.orbit-path ellipse { fill: none; }
+.orbit-line {
+  stroke: var(--text-dim);
   stroke-width: 1.5;
-  stroke-dasharray: 2 14;   /* короткие штрихи с большими промежутками */
-  stroke-linecap: round;
-  opacity: 0.8;
-  animation: orbit-flow 1.6s linear infinite;
+  opacity: 0.85;
 }
-@keyframes orbit-flow {
-  /* Смещаем штрихи ровно на длину одного повтора (2 + 14) */
-  to { stroke-dashoffset: -16; }
+.orbit-runner {
+  stroke: var(--text);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  opacity: 0.9;
+  /* Длину штриха и промежутка задаёт js/slides.js по размеру эллипса */
+  animation: orbit-run 5.5s linear infinite;
+}
+@keyframes orbit-run {
+  to { stroke-dashoffset: calc(var(--orbit-len, 1000) * -1px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .orbit-path ellipse { animation: none; }
+  .orbit-runner { animation: none; opacity: 0; }
 }
+
 .orbit-word {
   position: absolute;
   left: 50%;
@@ -237,6 +242,17 @@
   will-change: transform, opacity;
 }
 .orbit-word.accent { color: var(--accent); }
+/* Номер шага: цикл замкнут, но порядок обхода должен читаться */
+.orbit-num {
+  margin-right: 0.55em;
+  font-size: 0.5em;
+  font-style: normal;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  vertical-align: 0.35em;
+}
+.orbit-word.accent .orbit-num { color: currentColor; opacity: 0.6; }
 
 /* ---------- Титульный слайд ----------
    Промт печатает сам себя (js/slides.js ставит класс typed, когда

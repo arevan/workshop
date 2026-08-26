@@ -61,7 +61,10 @@ mark { background: none; color: var(--accent); }
   inset: 0;
   z-index: 0;
   pointer-events: none; /* фон не перехватывает клики и выделение */
+  transition: opacity 0.4s;
 }
+/* Слайд может попросить чистый фон: dots: false в его frontmatter */
+body.no-dots #dots { opacity: 0; }
 .hub-wrap, .stage, .slides-home, .progress, .counter, .hint, .notes {
   position: relative;
   z-index: 1;
