@@ -198,10 +198,7 @@
       return `<div class="orbit-wrap">
         <h1 class="title reveal" style="--i:0">${MD.inline(meta.title || '')}</h1>
         <div class="orbit" aria-label="${MD.escapeHtml(words.join(' → '))}">
-          <svg class="orbit-path" aria-hidden="true">
-            <ellipse class="orbit-line" />
-            <ellipse class="orbit-runner" />
-          </svg>
+          <svg class="orbit-path" aria-hidden="true"><ellipse class="orbit-line" /></svg>
           ${items}
         </div>
       </div>`;
@@ -270,8 +267,7 @@
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const svg = box.querySelector('.orbit-path');
-    const ellipses = svg ? [...svg.querySelectorAll('ellipse')] : [];
-    const runner = svg && svg.querySelector('.orbit-runner');
+    const ellipse = svg && svg.querySelector('.orbit-line');
     let lastW = 0;
     let lastH = 0;
 
@@ -281,27 +277,16 @@
       const rx = w / 2 - 60;  // радиусы с запасом, чтобы слова не срезало
       const ry = h / 2 - 30;
 
-      // Рисуем эллипс в реальных пикселях: если растянуть SVG,
-      // бегущий сегмент вытянется по горизонтали и станет неровным.
-      if (ellipses.length && (w !== lastW || h !== lastH)) {
+      // Рисуем эллипс в реальных пикселях, а не в растянутом viewBox:
+      // иначе линия получается разной толщины по горизонтали и вертикали.
+      if (ellipse && (w !== lastW || h !== lastH)) {
         lastW = w;
         lastH = h;
         svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-        ellipses.forEach((e) => {
-          e.setAttribute('cx', w / 2);
-          e.setAttribute('cy', h / 2);
-          e.setAttribute('rx', rx);
-          e.setAttribute('ry', ry);
-        });
-        // Длина эллипса по Рамануджану — нужна, чтобы задать светлячку
-        // короткий штрих и промежуток ровно в остальную длину кольца.
-        const len = Math.PI * (3 * (rx + ry) -
-          Math.sqrt((3 * rx + ry) * (rx + 3 * ry)));
-        if (runner) {
-          const dash = Math.max(40, len * 0.06);
-          runner.style.strokeDasharray = `${dash} ${len - dash}`;
-          runner.style.setProperty('--orbit-len', len);
-        }
+        ellipse.setAttribute('cx', w / 2);
+        ellipse.setAttribute('cy', h / 2);
+        ellipse.setAttribute('rx', rx);
+        ellipse.setAttribute('ry', ry);
       }
 
       words.forEach((el, i) => {
@@ -311,10 +296,12 @@
         const y = Math.sin(a) * ry;
         // sin > 0 — ближняя половина орбиты: крупнее, ярче и поверх.
         const depth = (Math.sin(a) + 1) / 2;
-        const scale = 0.72 + depth * 0.38;
+        const scale = 0.78 + depth * 0.32;
         el.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(${scale})`;
-        el.style.opacity = 0.4 + depth * 0.6;
-        el.style.zIndex = Math.round(depth * 100);
+        // Даже дальние слова остаются читаемыми — иначе линия орбиты
+        // просвечивает сквозь буквы и кажется, что она их перечёркивает.
+        el.style.opacity = 0.62 + depth * 0.38;
+        el.style.zIndex = Math.round(depth * 100) + 1;
       });
     };
 
