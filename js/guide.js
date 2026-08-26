@@ -67,4 +67,49 @@
     </header>
     <nav class="g-toc">${toc}</nav>
     ${bodyHtml}`;
+
+  /*
+   * Лайтбокс: клик по скриншоту показывает его во весь экран.
+   * Закрывается тремя способами — крестик, клик мимо картинки, Esc.
+   * Если JS не сработал, ссылка остаётся обычной: картинка просто откроется
+   * отдельной страницей.
+   */
+  const box = document.createElement('div');
+  box.className = 'lightbox';
+  box.innerHTML =
+    '<button class="lightbox-close" type="button" aria-label="Закрыть">×</button>' +
+    '<img alt=""><span class="lightbox-hint">Закрыть — Esc или клик мимо картинки</span>';
+  document.body.appendChild(box);
+  const bigImage = box.querySelector('img');
+
+  function openLightbox(src, alt) {
+    bigImage.src = src;
+    bigImage.alt = alt;
+    box.classList.add('open');
+    document.body.style.overflow = 'hidden'; // страница под оверлеем не скроллится
+    box.querySelector('.lightbox-close').focus();
+  }
+
+  function closeLightbox() {
+    box.classList.remove('open');
+    document.body.style.overflow = '';
+    bigImage.removeAttribute('src');
+  }
+
+  root.addEventListener('click', (e) => {
+    const link = e.target.closest('figure.shot a');
+    if (!link) return;
+    e.preventDefault();
+    openLightbox(link.getAttribute('href'), link.querySelector('img').alt);
+  });
+
+  // Клик по фону или крестику закрывает; по самой картинке — нет,
+  // чтобы её можно было рассматривать, не боясь промахнуться.
+  box.addEventListener('click', (e) => {
+    if (e.target !== bigImage) closeLightbox();
+  });
+
+  addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && box.classList.contains('open')) closeLightbox();
+  });
 })();

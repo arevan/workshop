@@ -9,7 +9,10 @@
  */
 
 async function loadText(path) {
-  const res = await fetch(path);
+  // cache: 'no-cache' — браузер каждый раз спрашивает сервер, не изменился ли
+  // файл. Без этого правишь текст в content/, обновляешь страницу, а там
+  // всё по-старому: браузер отдаёт версию из кеша.
+  const res = await fetch(path, { cache: 'no-cache' });
   if (!res.ok) throw new Error('Не удалось загрузить ' + path + ' (' + res.status + ')');
   return res.text();
 }
