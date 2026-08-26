@@ -41,7 +41,8 @@
 .body {
   grid-column: 1 / -1;
   align-self: center;
-  padding-bottom: 2vh;
+  /* Отступ сверху не даёт длинному заголовку прижаться к списку */
+  padding: clamp(24px, 6vh, 64px) 0 2vh;
 }
 
 /* Тусклая строка внизу слайда («Дальше — …») */
