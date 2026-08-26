@@ -360,9 +360,11 @@
   .aside { padding-top: 14px; }
   .body { align-self: start; padding-top: 4.5vh; }
   .compare { grid-template-columns: 1fr; row-gap: 40px; }
+  /* Колонки схлопываются в один список. Между группами без заголовков
+     разрыв не нужен — иначе читается как случайная дыра. */
   .cols { grid-template-columns: 1fr; }
   .col:not(.with-header) p { margin-bottom: 20px; }
-  .col + .col { margin-top: 28px; }
+  .col.with-header + .col.with-header { margin-top: 28px; }
   .pairs { grid-template-columns: 1fr; row-gap: 6px; }
   .pair .desc { margin-bottom: 18px; }
 }
