@@ -99,12 +99,15 @@
    Скругления обязательны: скрин интерфейса на тёмном фоне без них
    выглядит вырезанным. Файлы лежат в assets/guide/. */
 .shot { margin: 22px 0 26px; }
+.shot a { display: block; border: none; }
 .shot img {
   display: block;
   width: 100%;
   height: auto;
   border-radius: 14px;
+  transition: opacity 0.15s;
 }
+.shot a:hover img { opacity: 0.82; }
 /* Вертикальные скрины телефона — уже, чтобы не занимать всю колонку */
 .shot-phone img { max-width: 290px; border-radius: 22px; }
 .shot figcaption {

@@ -25,13 +25,17 @@
     return blocks.map((b) => {
       if (b.type === 'h2') return `<h3>${MD.inline(b.text)}</h3>`;
       if (b.type === 'code') return `<pre><code>${MD.escapeHtml(b.text)}</code></pre>`;
-      // Картинка. Если файла ещё нет — прячем весь блок, чтобы не было
-      // «сломанной» иконки: гайд читается и без скриншотов.
+      // Картинка. Открывается в полном размере по клику — на широких
+      // скриншотах интерфейса иначе не разглядеть подписи.
+      // Если файла ещё нет — прячем весь блок, чтобы не было «сломанной»
+      // иконки: гайд читается и без скриншотов.
       if (b.type === 'img') {
         const cls = /phone|ios-/.test(b.src) ? 'shot shot-phone' : 'shot';
+        const src = MD.escapeHtml(b.src);
         return `<figure class="${cls}">` +
-          `<img src="${MD.escapeHtml(b.src)}" alt="${MD.escapeHtml(b.alt)}"` +
-          ` onerror="this.closest('figure').hidden = true">` +
+          `<a href="${src}" target="_blank" rel="noopener">` +
+          `<img src="${src}" alt="${MD.escapeHtml(b.alt)}"` +
+          ` onerror="this.closest('figure').hidden = true"></a>` +
           (b.alt ? `<figcaption>${MD.inline(b.alt)}</figcaption>` : '') +
           '</figure>';
       }
