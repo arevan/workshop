@@ -6,7 +6,9 @@
 
 .slides-page { overflow: hidden; height: 100dvh; }
 
-.stage { position: fixed; inset: 0; background: var(--bg); }
+/* Без собственного фона: под сценой живёт канвас с точками (js/dots.js),
+   а цвет фона задаёт body. */
+.stage { position: fixed; inset: 0; }
 
 /* ---------- Каркас слайда ---------- */
 .slide {

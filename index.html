@@ -10,6 +10,9 @@
   <link rel="stylesheet" href="css/slides.css">
 </head>
 <body>
+  <!-- Живой фон: сетка точек, расходится под курсором (js/dots.js) -->
+  <canvas id="dots" aria-hidden="true"></canvas>
+
   <!-- Хаб: две двери — презентация и раздатка. Работает даже без сервера. -->
   <main class="hub-wrap">
     <p class="hub-kicker reveal" style="--i:0">Внутренний воркшоп · продуктовым дизайнерам</p>
@@ -28,5 +31,7 @@
       <code>«поменяй жёлтый акцент на другой цвет»</code>.</p>
     </section>
   </main>
+
+  <script src="js/dots.js"></script>
 </body>
 </html>

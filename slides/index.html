@@ -10,6 +10,9 @@
   <link rel="stylesheet" href="../css/slides.css">
 </head>
 <body class="slides-page">
+  <!-- Живой фон: сетка точек, расходится под курсором (js/dots.js) -->
+  <canvas id="dots" aria-hidden="true"></canvas>
+
   <!-- Сюда движок кладёт слайды. Контент — в /content/slides/*.md -->
   <main id="stage" class="stage" aria-live="polite"></main>
 
@@ -22,6 +25,7 @@
   <div id="hint" class="hint">→ или пробел — дальше&ensp;·&ensp;F — во весь экран&ensp;·&ensp;N — заметки</div>
   <div id="notes" class="notes"></div>
 
+  <script src="../js/dots.js"></script>
   <script src="../js/md.js"></script>
   <script src="../js/content.js"></script>
   <script src="../js/slides.js"></script>
