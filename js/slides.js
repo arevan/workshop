@@ -182,6 +182,28 @@
       return html + '</div>';
     },
 
+    // Орбита: слова цикла едут по наклонённому эллипсу. Порядок и текст
+    // берутся из строки вида «Idea → Build → ==Run== → Polish».
+    // Движение считает startOrbit.
+    orbit(blocks, meta) {
+      const line = blocks.find((b) => b.type === 'p');
+      const words = (line ? line.text : '').split('→').map((s) => s.trim()).filter(Boolean);
+      const items = words.map((w) => {
+        const accent = /^==.*==$/.test(w);
+        const text = accent ? w.slice(2, -2) : w;
+        return `<span class="orbit-word${accent ? ' accent' : ''}">${MD.escapeHtml(text)}</span>`;
+      }).join('');
+      return `<div class="orbit-wrap">
+        <h1 class="title reveal" style="--i:0">${MD.inline(meta.title || '')}</h1>
+        <div class="orbit" aria-label="${MD.escapeHtml(words.join(' → '))}">
+          <svg class="orbit-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <ellipse cx="50" cy="50" rx="49" ry="30" />
+          </svg>
+          ${items}
+        </div>
+      </div>`;
+    },
+
     // Титульный слайд: приветствие печатает само себя в терминальном
     // стиле, строка за строкой. Каждый абзац тела — одна строка.
     // Очередью печати управляет startCoverTyping.
@@ -205,7 +227,7 @@
     el.className = 'slide layout-' + layout;
     if (s.meta.variant) el.classList.add('variant-' + s.meta.variant);
 
-    if (layout === 'break' || layout === 'cover') {
+    if (layout === 'break' || layout === 'cover' || layout === 'orbit') {
       el.innerHTML = LAYOUTS[layout](s.blocks, s.meta);
       return el;
     }
@@ -227,6 +249,47 @@
     stage.appendChild(el);
     return el;
   });
+
+  /* ---------- Орбита ----------
+     Слова едут по эллипсу: угол растёт со временем, положение считается
+     синусом и косинусом. Ближние (нижняя половина) крупнее и ярче —
+     от этого плоский эллипс читается как наклонённое кольцо. */
+  let orbitRaf = 0;
+  function startOrbit(slide) {
+    cancelAnimationFrame(orbitRaf); // остановить орбиту прошлого слайда
+    const box = slide.querySelector('.orbit');
+    if (!box) return;
+    const words = [...box.querySelectorAll('.orbit-word')];
+    if (!words.length) return;
+
+    const step = (Math.PI * 2) / words.length; // равные промежутки по кругу
+    const SPEED = 0.00016;                     // радиан в миллисекунду
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const place = (time) => {
+      const w = box.clientWidth;
+      const h = box.clientHeight;
+      const rx = w / 2 - 60;  // радиусы с запасом, чтобы слова не срезало
+      const ry = h / 2 - 30;
+
+      words.forEach((el, i) => {
+        // Старт снизу (-90°), чтобы первое слово было к зрителю.
+        const a = -Math.PI / 2 + i * step + (reduce ? 0 : time * SPEED);
+        const x = Math.cos(a) * rx;
+        const y = Math.sin(a) * ry;
+        // sin > 0 — ближняя половина орбиты: крупнее, ярче и поверх.
+        const depth = (Math.sin(a) + 1) / 2;
+        const scale = 0.72 + depth * 0.38;
+        el.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(${scale})`;
+        el.style.opacity = 0.4 + depth * 0.6;
+        el.style.zIndex = Math.round(depth * 100);
+      });
+    };
+
+    if (reduce) { place(0); return; }
+    const loop = (t) => { place(t); orbitRaf = requestAnimationFrame(loop); };
+    orbitRaf = requestAnimationFrame(loop);
+  }
 
   /* ---------- Печатающееся приветствие ----------
      Строки печатаются по очереди; каретка мигает только у той строки,
@@ -298,6 +361,7 @@
     const el = els[cur];
     el.classList.add('active');
     startCoverTyping(el);
+    startOrbit(el);
     counter.textContent = pad2(cur + 1) + ' / ' + pad2(els.length);
     bar.style.width = ((cur + 1) / els.length) * 100 + '%';
     document.title = pad2(cur + 1) + ' · ' + (slides[cur].meta.title || 'Слайд');
