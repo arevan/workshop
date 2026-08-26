@@ -230,6 +230,7 @@
   opacity: 0;
   transition: opacity 0.7s var(--ease-out) 0.6s;
 }
+.cover-sub + .cover-sub { margin-top: 1vh; transition-delay: 0.75s; }
 .layout-cover.typed .cover-title {
   opacity: 1;
   transform: none;
@@ -346,14 +347,6 @@
   .slide .title.reveal { animation: none; opacity: 1; }
 }
 
-/* ---------- Фрагменты ----------
-   Пункт скрыт, пока докладчик не проявит его пробелом или стрелкой.
-   Класс frag-on ставит js/slides.js. */
-.frag { opacity: 0; }
-.frag.frag-on { animation: reveal var(--reveal-dur) var(--ease-out) forwards; }
-@media (prefers-reduced-motion: reduce) {
-  .frag.frag-on { animation: none; opacity: 1; }
-}
 
 /* Когда мышь замерла, курсор прячется: докладчик листает с клавиатуры,
    и лишний указатель на экране только отвлекает. Класс idle ставит
