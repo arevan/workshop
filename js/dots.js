@@ -30,7 +30,7 @@
   const PUSH = num('--dots-push', 14);        // насколько точки отходят, px
   const BASE = num('--dots-opacity', 0.14);   // яркость в покое
   const PEAK = num('--dots-peak', 0.7);       // яркость под курсором
-  const IDLE = num('--dots-idle', 2000);      // мс покоя до возврата сетки
+  const IDLE = num('--dots-idle', 1000);      // мс покоя до возврата сетки
   const COLOR = (css.getPropertyValue('--dots-color') || '#8E8E8E').trim();
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -168,8 +168,15 @@
       targetY = e.clientY;
       influenceTarget = 1;
       clearTimeout(idleTimer);
-      // Курсор замер — через паузу отпускаем сетку обратно.
-      idleTimer = setTimeout(() => { influenceTarget = 0; wake(); }, IDLE);
+
+      // Над ссылкой или кнопкой курсор специально останавливают —
+      // там сетку не отпускаем, иначе эффект гаснет прямо под курсором.
+      const overInteractive = e.target instanceof Element &&
+        e.target.closest('a, button, [role="button"]');
+      if (!overInteractive) {
+        // Курсор замер над пустым местом — через паузу сетка возвращается.
+        idleTimer = setTimeout(() => { influenceTarget = 0; wake(); }, IDLE);
+      }
       wake();
     }, { passive: true });
 
