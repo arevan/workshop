@@ -189,17 +189,21 @@
 .layout-cover.active { display: flex; }
 .cover { width: 100%; }
 
-.cover-prompt {
-  margin: 0 0 clamp(28px, 7vh, 64px);
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: clamp(14px, 1.5vw, 26px);
-  color: var(--text-muted);
-  min-height: 1.4em;
+/* Строка приветствия: моноширинный шрифт, тусклый префикс «>».
+   Пустая строка держит высоту, чтобы соседние не прыгали при печати. */
+.cover-line {
+  margin: 0 0 clamp(14px, 2.6vh, 28px);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: clamp(15px, 1.75vw, 30px);
+  line-height: 1.55;
+  color: var(--text);
+  min-height: 1.55em;
 }
+.cover-line:last-child { margin-bottom: 0; }
 .cover-prefix { color: var(--text-dim); margin-right: 1ch; }
 
-/* Каретка — единственный жёлтый элемент титула. Видна только у того
-   блока, который печатается сейчас (классы ставит js/slides.js). */
+/* Каретка — единственный жёлтый элемент слайда. Видна только у строки,
+   которая печатается сейчас (класс typing ставит js/slides.js). */
 .cover-caret {
   display: none;
   width: 0.55ch;
@@ -210,37 +214,7 @@
   animation: caret-blink 1.05s steps(1) infinite;
 }
 @keyframes caret-blink { 50% { opacity: 0; } }
-
-.layout-cover.typing-prompt .cover-prompt .cover-caret { display: inline-block; }
-.layout-cover.typing-title .cover-title .cover-caret,
-.layout-cover.typed .cover-title .cover-caret { display: inline-block; }
-
-.cover-title {
-  margin: 0;
-  /* Резерв под две строки, чтобы подписи не прыгали во время печати */
-  min-height: 2.2em;
-  font-size: clamp(44px, 5.6vw, 104px);
-  font-weight: var(--w-display);
-  line-height: 1.06;
-  letter-spacing: -0.015em;
-}
-.cover-title .cover-caret {
-  width: 0.5ch;
-  height: 0.78em;
-  margin-left: 10px;
-}
-.cover-sub {
-  margin: 2.6vh 0 0;
-  font-size: clamp(15px, 1.7vw, 30px);
-  color: var(--text-muted);
-  opacity: 0;
-  transition: opacity 0.7s var(--ease-out) 0.25s;
-}
-.cover-sub + .cover-sub { margin-top: 1vh; transition-delay: 0.45s; }
-.layout-cover.typed .cover-sub { opacity: 1; }
-@media (prefers-reduced-motion: reduce) {
-  .cover-sub { transition: none; }
-}
+.cover-line.typing .cover-caret { display: inline-block; }
 
 /* QR-код на финальном слайде */
 .break-qr { margin: clamp(28px, 8vh, 72px) 0 0; }

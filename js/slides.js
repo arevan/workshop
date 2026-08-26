@@ -182,20 +182,18 @@
       return html + '</div>';
     },
 
-    // Титульный слайд: быстро печатается промт, затем — как ответ агента —
-    // крупно печатается приветствие из title. Строки из тела появляются
-    // в конце. Последовательностью управляет startCoverTyping.
-    cover(blocks, meta) {
-      const prompt = meta.prompt || '';
-      const subs = blocks
+    // Титульный слайд: приветствие печатает само себя в терминальном
+    // стиле, строка за строкой. Каждый абзац тела — одна строка.
+    // Очередью печати управляет startCoverTyping.
+    cover(blocks) {
+      const lines = blocks
         .filter((b) => b.type === 'p')
-        .map((b) => `<p class="cover-sub">${MD.inline(b.text)}</p>`)
+        .map((b) => `<p class="cover-line">` +
+          `<span class="cover-prefix">&gt;</span>` +
+          `<span class="cover-line-type" data-text="${MD.escapeHtml(b.text)}"></span>` +
+          `<span class="cover-caret"></span></p>`)
         .join('');
-      return `<div class="cover">
-        <p class="cover-prompt"><span class="cover-prefix">&gt;</span><span class="cover-type" data-text="${MD.escapeHtml(prompt)}"></span><span class="cover-caret"></span></p>
-        <h1 class="cover-title"><span class="cover-title-type" data-text="${MD.escapeHtml(meta.title || '')}"></span><span class="cover-caret"></span></h1>
-        ${subs}
-      </div>`;
+      return `<div class="cover">${lines}</div>`;
     },
   };
 
@@ -230,11 +228,10 @@
     return el;
   });
 
-  /* ---------- Печатающийся титул ----------
-     Последовательность: быстро печатается промт → пауза → крупно,
-     с кареткой, печатается приветствие → появляются строки-подписи.
-     Классы typing-prompt / typing-title / typed переключают каретки
-     и подписи в CSS. Перезапускается при каждом входе на слайд. */
+  /* ---------- Печатающееся приветствие ----------
+     Строки печатаются по очереди; каретка мигает только у той строки,
+     которая печатается сейчас, и остаётся у последней. Перезапускается
+     при каждом входе на слайд. */
   let typingTimer;
   function typeInto(node, text, speed, done) {
     let n = 0;
@@ -250,31 +247,38 @@
   }
 
   function startCoverTyping(slide) {
-    clearInterval(typingTimer); // остановить печать, если ушли со слайда раньше
-    const promptEl = slide.querySelector('.cover-type');
-    const titleEl = slide.querySelector('.cover-title-type');
-    if (!promptEl || !titleEl) return;
+    clearInterval(typingTimer);   // печать могла идти, если ушли со слайда
+    clearTimeout(typingTimer);    // ...или шла пауза между строками
+    const lines = [...slide.querySelectorAll('.cover-line')];
+    if (!lines.length) return;
 
-    const promptText = promptEl.dataset.text || '';
-    const titleText = titleEl.dataset.text || '';
-    slide.classList.remove('typing-prompt', 'typing-title', 'typed');
+    lines.forEach((p) => p.classList.remove('typing', 'done'));
 
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      promptEl.textContent = promptText;
-      titleEl.textContent = titleText;
-      slide.classList.add('typed');
+      lines.forEach((p) => {
+        p.querySelector('.cover-line-type').textContent = p.querySelector('.cover-line-type').dataset.text || '';
+        p.classList.add('done');
+      });
+      lines[lines.length - 1].classList.add('typing'); // каретка на последней
       return;
     }
 
-    titleEl.textContent = '';
-    slide.classList.add('typing-prompt');
-    typeInto(promptEl, promptText, 18, () => {
-      typingTimer = setTimeout(() => {
-        slide.classList.remove('typing-prompt');
-        slide.classList.add('typing-title');
-        typeInto(titleEl, titleText, 48, () => slide.classList.add('typed'));
-      }, 380);
-    });
+    lines.forEach((p) => { p.querySelector('.cover-line-type').textContent = ''; });
+
+    const typeLine = (i) => {
+      if (i >= lines.length) return;
+      const p = lines[i];
+      const node = p.querySelector('.cover-line-type');
+      p.classList.add('typing');
+      typeInto(node, node.dataset.text || '', 34, () => {
+        p.classList.add('done');
+        if (i + 1 < lines.length) {
+          p.classList.remove('typing'); // каретка уезжает на следующую строку
+          typingTimer = setTimeout(() => typeLine(i + 1), 420);
+        }
+      });
+    };
+    typeLine(0);
   }
 
   /* ================= 3. Навигация ================= */
