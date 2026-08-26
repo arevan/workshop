@@ -1,7 +1,7 @@
 ---
 layout: break
 title: Build succeeded
-subtitle: Спасибо! Дальше — мини-чек окружения и Q&A.
+subtitle: Спасибо! Дальше — увидимся на хакатоне.
 qr: ../assets/qr-repo.png
 qrlabel: Этот сайт, гайд и всё для подготовки — github.com/arevan/workshop
 notes: |
