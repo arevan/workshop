@@ -198,9 +198,10 @@
 }
 .cover-prefix { color: var(--text-dim); margin-right: 1ch; }
 
-/* Каретка — единственный жёлтый элемент титула. */
+/* Каретка — единственный жёлтый элемент титула. Видна только у того
+   блока, который печатается сейчас (классы ставит js/slides.js). */
 .cover-caret {
-  display: inline-block;
+  display: none;
   width: 0.55ch;
   height: 1.05em;
   margin-left: 3px;
@@ -210,35 +211,35 @@
 }
 @keyframes caret-blink { 50% { opacity: 0; } }
 
+.layout-cover.typing-prompt .cover-prompt .cover-caret { display: inline-block; }
+.layout-cover.typing-title .cover-title .cover-caret,
+.layout-cover.typed .cover-title .cover-caret { display: inline-block; }
+
 .cover-title {
   margin: 0;
+  /* Резерв под две строки, чтобы подписи не прыгали во время печати */
+  min-height: 2.2em;
   font-size: clamp(44px, 5.6vw, 104px);
   font-weight: var(--w-display);
   line-height: 1.06;
   letter-spacing: -0.015em;
-  opacity: 0;
-  transform: translateY(16px);
-  font-variation-settings: "wght" 200;
-  transition: opacity 0.7s var(--ease-out) 0.35s,
-    transform 0.7s var(--ease-out) 0.35s,
-    font-variation-settings 0.7s ease 0.35s;
+}
+.cover-title .cover-caret {
+  width: 0.5ch;
+  height: 0.78em;
+  margin-left: 10px;
 }
 .cover-sub {
   margin: 2.6vh 0 0;
   font-size: clamp(15px, 1.7vw, 30px);
   color: var(--text-muted);
   opacity: 0;
-  transition: opacity 0.7s var(--ease-out) 0.6s;
+  transition: opacity 0.7s var(--ease-out) 0.25s;
 }
-.cover-sub + .cover-sub { margin-top: 1vh; transition-delay: 0.75s; }
-.layout-cover.typed .cover-title {
-  opacity: 1;
-  transform: none;
-  font-variation-settings: "wght" 300;
-}
+.cover-sub + .cover-sub { margin-top: 1vh; transition-delay: 0.45s; }
 .layout-cover.typed .cover-sub { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .cover-title, .cover-sub { transition: none; }
+  .cover-sub { transition: none; }
 }
 
 /* QR-код на финальном слайде */

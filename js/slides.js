@@ -182,8 +182,9 @@
       return html + '</div>';
     },
 
-    // Титульный слайд: промт печатает сам себя (см. startCoverTyping),
-    // а когда допечатан — появляется заголовок и строки из тела слайда.
+    // Титульный слайд: быстро печатается промт, затем — как ответ агента —
+    // крупно печатается приветствие из title. Строки из тела появляются
+    // в конце. Последовательностью управляет startCoverTyping.
     cover(blocks, meta) {
       const prompt = meta.prompt || '';
       const subs = blocks
@@ -192,7 +193,7 @@
         .join('');
       return `<div class="cover">
         <p class="cover-prompt"><span class="cover-prefix">&gt;</span><span class="cover-type" data-text="${MD.escapeHtml(prompt)}"></span><span class="cover-caret"></span></p>
-        <h1 class="cover-title">${MD.inline(meta.title || '')}</h1>
+        <h1 class="cover-title"><span class="cover-title-type" data-text="${MD.escapeHtml(meta.title || '')}"></span><span class="cover-caret"></span></h1>
         ${subs}
       </div>`;
     },
@@ -229,29 +230,51 @@
     return el;
   });
 
-  /* ---------- Печатающийся промт на титуле ---------- */
+  /* ---------- Печатающийся титул ----------
+     Последовательность: быстро печатается промт → пауза → крупно,
+     с кареткой, печатается приветствие → появляются строки-подписи.
+     Классы typing-prompt / typing-title / typed переключают каретки
+     и подписи в CSS. Перезапускается при каждом входе на слайд. */
   let typingTimer;
-  function startCoverTyping(el) {
-    clearInterval(typingTimer);
-    const t = el.querySelector('.cover-type');
-    if (!t) return;
-    const full = t.dataset.text || '';
-    el.classList.remove('typed');
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      t.textContent = full;
-      el.classList.add('typed');
-      return;
-    }
-    t.textContent = '';
+  function typeInto(node, text, speed, done) {
     let n = 0;
+    node.textContent = '';
     typingTimer = setInterval(() => {
       n++;
-      t.textContent = full.slice(0, n);
-      if (n >= full.length) {
+      node.textContent = text.slice(0, n);
+      if (n >= text.length) {
         clearInterval(typingTimer);
-        el.classList.add('typed');
+        if (done) done();
       }
-    }, 42);
+    }, speed);
+  }
+
+  function startCoverTyping(slide) {
+    clearInterval(typingTimer); // остановить печать, если ушли со слайда раньше
+    const promptEl = slide.querySelector('.cover-type');
+    const titleEl = slide.querySelector('.cover-title-type');
+    if (!promptEl || !titleEl) return;
+
+    const promptText = promptEl.dataset.text || '';
+    const titleText = titleEl.dataset.text || '';
+    slide.classList.remove('typing-prompt', 'typing-title', 'typed');
+
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      promptEl.textContent = promptText;
+      titleEl.textContent = titleText;
+      slide.classList.add('typed');
+      return;
+    }
+
+    titleEl.textContent = '';
+    slide.classList.add('typing-prompt');
+    typeInto(promptEl, promptText, 18, () => {
+      typingTimer = setTimeout(() => {
+        slide.classList.remove('typing-prompt');
+        slide.classList.add('typing-title');
+        typeInto(titleEl, titleText, 48, () => slide.classList.add('typed'));
+      }, 380);
+    });
   }
 
   /* ================= 3. Навигация ================= */
