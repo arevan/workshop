@@ -182,6 +182,27 @@
       return html + '</div>';
     },
 
+    // Ряд телефонов с записями демок. Каждый кейс — строка вида
+    // «![Название — время](../assets/demos/file.mp4)». Пока файла нет,
+    // экран остаётся пустым, слайд не ломается.
+    mockups(blocks) {
+      const items = blocks.filter((b) => b.type === 'img');
+      const phones = items.map((b, i) => {
+        const src = MD.escapeHtml(b.src);
+        const isVideo = /\.(mp4|webm|mov)$/i.test(b.src);
+        const media = isVideo
+          ? `<video src="${src}" muted loop autoplay playsinline
+               onerror="this.closest('.phone').classList.add('empty')"></video>`
+          : `<img src="${src}" alt=""
+               onerror="this.closest('.phone').classList.add('empty')">`;
+        return `<figure class="phone reveal" style="--i:${revealIndex++}">
+          <div class="phone-frame">${media}</div>
+          ${b.alt ? `<figcaption>${MD.inline(b.alt)}</figcaption>` : ''}
+        </figure>`;
+      }).join('');
+      return `<div class="phones">${phones}</div>`;
+    },
+
     // Орбита: слова цикла едут по наклонённому эллипсу. Порядок и текст
     // берутся из строки вида «Idea → Build → ==Run== → Polish».
     // Движение считает startOrbit.
