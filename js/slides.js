@@ -298,12 +298,13 @@
   addEventListener('keydown', hideHint, { once: true });
   addEventListener('click', hideHint, { once: true });
 
-  // Курсор прячется, когда мышь замерла.
-  let cursorTimer;
+  // Пока мышь двигают, на теле висит класс mouse-active: видны курсор
+  // и ссылка возврата. Замерла на пару секунд — оба исчезают.
+  let idleTimer;
   addEventListener('mousemove', () => {
-    document.body.classList.remove('no-cursor');
-    clearTimeout(cursorTimer);
-    cursorTimer = setTimeout(() => document.body.classList.add('no-cursor'), 2500);
+    document.body.classList.add('mouse-active');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => document.body.classList.remove('mouse-active'), 2500);
   });
 
   // Старт: открываем слайд из адреса (#7) или первый.

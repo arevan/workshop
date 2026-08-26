@@ -13,7 +13,10 @@
   <!-- Сюда движок кладёт слайды. Контент — в /content/slides/*.md -->
   <main id="stage" class="stage" aria-live="polite"></main>
 
-  <!-- Служебная обвязка: прогресс, счётчик, подсказка, заметки -->
+  <!-- Служебная обвязка: возврат, прогресс, счётчик, подсказка, заметки.
+       Ссылка назад показывается только когда двигают мышью — чтобы
+       не мозолить глаза на проекторе. -->
+  <a class="slides-home" href="../index.html">← Воркшоп</a>
   <div class="progress"><b id="bar"></b></div>
   <div id="counter" class="counter"></div>
   <div id="hint" class="hint">→ листать&ensp;·&ensp;F — во весь экран&ensp;·&ensp;N — заметки</div>
