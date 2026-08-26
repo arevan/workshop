@@ -231,10 +231,13 @@
       return el;
     }
 
+    // Без правого абзаца заголовок занимает всю ширину слайда,
+    // иначе справа остаётся пустая колонка.
+    if (!s.meta.aside) el.classList.add('no-aside');
     const title = `<header class="head"><h1 class="title reveal" style="--i:${revealIndex++}">${MD.inline(s.meta.title || '')}</h1></header>`;
     const aside = s.meta.aside
       ? `<aside class="aside reveal" style="--i:${revealIndex++}">${MD.inline(s.meta.aside)}</aside>`
-      : '<aside class="aside"></aside>';
+      : '';
     const body = `<div class="body">${(LAYOUTS[layout] || LAYOUTS.list)(s.blocks, s.meta)}</div>`;
     const foot = s.meta.footer
       ? `<footer class="foot reveal" style="--i:${revealIndex++}">${MD.inline(s.meta.footer)}</footer>`

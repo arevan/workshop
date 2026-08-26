@@ -21,6 +21,8 @@
   padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
 }
 .slide.active { display: grid; }
+/* Нет правого абзаца — заголовок разворачивается на всю ширину */
+.slide.no-aside { grid-template-columns: 1fr; }
 
 .title {
   margin: 0;

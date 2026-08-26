@@ -8,7 +8,7 @@ notes: |
   Инструменты и модели меняются каждые пару месяцев — цикл не меняется. Учим цикл, а не кнопки.
 ---
 
-Idea → Scope → Build → ==Run== → Inspect → Iterate → Polish
+Idea → Scope → Build → Run → Inspect → Iterate → Polish
 
 - Выбрать минимальный сценарий
 - Собрать первую рабочую версию
