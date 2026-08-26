@@ -261,11 +261,13 @@
   .reveal { animation: none; opacity: 1; }
 }
 
-/* Пока мышь не двигают, курсора не видно: докладчик листает с клавиатуры,
-   и лишний указатель на экране только отвлекает. */
-body:not(.mouse-active), body:not(.mouse-active) * { cursor: none; }
+/* Когда мышь замерла, курсор прячется: докладчик листает с клавиатуры,
+   и лишний указатель на экране только отвлекает. Класс idle ставит
+   js/slides.js — правило нарочно привязано к .slides-page, чтобы не
+   действовать на страницах, где движка слайдов нет. */
+.slides-page.idle, .slides-page.idle * { cursor: none; }
 
-/* Возврат на главную. Появляется вместе с курсором, по движению мыши. */
+/* Возврат на главную. Виден вместе с курсором и уходит вместе с ним. */
 .slides-home {
   position: fixed;
   top: 3.2vh;
@@ -274,16 +276,14 @@ body:not(.mouse-active), body:not(.mouse-active) * { cursor: none; }
   font-size: 12px;
   letter-spacing: 0.06em;
   color: var(--text-dim);
-  opacity: 0;
-  pointer-events: none;
   transition: opacity 0.25s, color 0.15s;
 }
-body.mouse-active .slides-home { opacity: 1; pointer-events: auto; }
+.slides-page.idle .slides-home { opacity: 0; pointer-events: none; }
 .slides-home:hover { color: var(--accent); }
 
 /* На тач-устройствах мыши нет — там ссылка видна всегда */
 @media (hover: none) {
-  .slides-home { opacity: 1; pointer-events: auto; }
+  .slides-page.idle .slides-home { opacity: 1; pointer-events: auto; }
 }
 
 /* ---------- Мобильный фолбэк: «не разваливается» ---------- */

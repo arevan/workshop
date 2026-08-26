@@ -298,14 +298,16 @@
   addEventListener('keydown', hideHint, { once: true });
   addEventListener('click', hideHint, { once: true });
 
-  // Пока мышь двигают, на теле висит класс mouse-active: видны курсор
-  // и ссылка возврата. Замерла на пару секунд — оба исчезают.
+  // Если мышь не двигают пару секунд, на теле появляется класс idle:
+  // курсор и ссылка возврата исчезают. Любое движение возвращает их.
   let idleTimer;
-  addEventListener('mousemove', () => {
-    document.body.classList.add('mouse-active');
+  function noticeMouse() {
+    document.body.classList.remove('idle');
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => document.body.classList.remove('mouse-active'), 2500);
-  });
+    idleTimer = setTimeout(() => document.body.classList.add('idle'), 2500);
+  }
+  addEventListener('mousemove', noticeMouse);
+  noticeMouse(); // запускаем отсчёт сразу, не дожидаясь первого движения
 
   // Старт: открываем слайд из адреса (#7) или первый.
   addEventListener('hashchange', () => go((parseInt(location.hash.slice(1), 10) || 1) - 1, false));
