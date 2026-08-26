@@ -3,13 +3,13 @@
  *
  * Как это работает:
  *   1. Рисуем плотную регулярную сетку точек на canvas.
- *   2. Точки рядом с курсором отходят в стороны и светлеют.
- *   3. Если курсор не двигается пару секунд, влияние плавно гаснет
- *      и сетка возвращается на место.
+ *   2. Точки рядом с курсором отходят в стороны — яркость не меняется,
+ *      двигается только сама сетка.
+ *   3. Если курсор замер на пустом месте, влияние плавно гаснет
+ *      и сетка возвращается. Над ссылками и кнопками — держится.
  *
- * Про скорость: точек тысячи, поэтому дальние (их большинство) рисуются
- * одним общим путём, и только те, что попали в радиус курсора, —
- * по отдельности со своей яркостью.
+ * Про скорость: точек тысячи, но яркость у всех одна, поэтому вся сетка
+ * рисуется одним путём и одной заливкой.
  *
  * Настройки — переменные --dots-* в css/tokens.css.
  */
@@ -28,8 +28,7 @@
   const SIZE = num('--dots-size', 1.1);       // радиус точки, px
   const RADIUS = num('--dots-radius', 190);   // радиус влияния курсора, px
   const PUSH = num('--dots-push', 14);        // насколько точки отходят, px
-  const BASE = num('--dots-opacity', 0.14);   // яркость в покое
-  const PEAK = num('--dots-peak', 0.7);       // яркость под курсором
+  const BASE = num('--dots-opacity', 0.16);   // яркость точки
   const IDLE = num('--dots-idle', 1000);      // мс покоя до возврата сетки
   const COLOR = (css.getPropertyValue('--dots-color') || '#8E8E8E').trim();
 
@@ -76,62 +75,42 @@
   function draw() {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = COLOR;
+    ctx.globalAlpha = BASE;
 
-    // Точки внутри этого прямоугольника могут попасть под влияние курсора —
-    // остальные заведомо нет, и их можно рисовать пачкой.
+    // Смещение считаем только для точек в этом прямоугольнике —
+    // остальные заведомо вне радиуса курсора.
     const active = influence > 0.004;
     const minI = active ? Math.floor((mouseX - RADIUS - offsetX) / GAP) : 0;
     const maxI = active ? Math.ceil((mouseX + RADIUS - offsetX) / GAP) : -1;
     const minJ = active ? Math.floor((mouseY - RADIUS - offsetY) / GAP) : 0;
     const maxJ = active ? Math.ceil((mouseY + RADIUS - offsetY) / GAP) : -1;
 
-    // 1. Дальние точки — одним путём с общей яркостью: так быстрее всего.
-    ctx.globalAlpha = BASE;
     ctx.beginPath();
     for (let i = 0; i < cols; i++) {
-      const near = active && i >= minI && i <= maxI;
+      const nearCol = active && i >= minI && i <= maxI;
       for (let j = 0; j < rows; j++) {
-        if (near && j >= minJ && j <= maxJ) continue; // разберём отдельно
         const x = offsetX + i * GAP;
         const y = offsetY + j * GAP;
-        ctx.moveTo(x + SIZE, y);
-        ctx.arc(x, y, SIZE, 0, Math.PI * 2);
-      }
-    }
-    ctx.fill();
-
-    if (!active) { ctx.globalAlpha = 1; return; }
-
-    // 2. Точки рядом с курсором — по одной, со своим смещением и яркостью.
-    for (let i = Math.max(0, minI); i <= Math.min(cols - 1, maxI); i++) {
-      for (let j = Math.max(0, minJ); j <= Math.min(rows - 1, maxJ); j++) {
-        const x = offsetX + i * GAP;
-        const y = offsetY + j * GAP;
-        const dx = x - mouseX;
-        const dy = y - mouseY;
-        const dist = Math.hypot(dx, dy);
-
         let px = x;
         let py = y;
-        let alpha = BASE;
 
-        if (dist < RADIUS) {
-          // Влияние спадает к краю радиуса; квадрат даёт мягкий край.
-          const force = (1 - dist / RADIUS) ** 2 * influence;
-          const shift = force * PUSH;
-          if (dist > 0.001) {
+        if (nearCol && j >= minJ && j <= maxJ) {
+          const dx = x - mouseX;
+          const dy = y - mouseY;
+          const dist = Math.hypot(dx, dy);
+          if (dist < RADIUS && dist > 0.001) {
+            // Влияние спадает к краю радиуса; квадрат даёт мягкий край.
+            const shift = (1 - dist / RADIUS) ** 2 * influence * PUSH;
             px += (dx / dist) * shift;
             py += (dy / dist) * shift;
           }
-          alpha = BASE + (PEAK - BASE) * force;
         }
 
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
+        ctx.moveTo(px + SIZE, py);
         ctx.arc(px, py, SIZE, 0, Math.PI * 2);
-        ctx.fill();
       }
     }
+    ctx.fill();
     ctx.globalAlpha = 1;
   }
 
