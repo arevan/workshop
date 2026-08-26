@@ -20,7 +20,7 @@
 
   /* ---- Типографика ---- */
   --font-sans: "Manrope", -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-  --w-display: 430;        /* большие заголовки — плотный regular, не bold */
+  --w-display: 600;        /* большие заголовки — semibold */
   --w-body: 400;
   --w-term: 440;           /* белые термины в парах — чуть плотнее фона */
 
