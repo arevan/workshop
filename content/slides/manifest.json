@@ -1,6 +1,7 @@
 {
   "title": "Вайбкодинг — воркшоп для дизайнеров",
   "slides": [
+    "00-cover.md",
     "01-plan.md",
     "02-vibecoding.md",
     "03-figma.md",
@@ -16,6 +17,7 @@
     "12-git.md",
     "13-done.md",
     "14-skills.md",
-    "15-strategy.md"
+    "15-strategy.md",
+    "16-final.md"
   ]
 }

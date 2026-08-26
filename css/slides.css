@@ -182,6 +182,77 @@
 .break-list { margin-top: 5.5vh; }
 .break-list p { margin: 0 0 2.2vh; color: var(--text-soft); font-size: clamp(15px, 1.7vw, 30px); }
 
+/* ---------- Титульный слайд ----------
+   Промт печатает сам себя (js/slides.js ставит класс typed, когда
+   допечатал) — и из него появляется заголовок. */
+.layout-cover { align-items: center; padding: 0 var(--pad-x); }
+.layout-cover.active { display: flex; }
+.cover { width: 100%; }
+
+.cover-prompt {
+  margin: 0 0 clamp(28px, 7vh, 64px);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: clamp(14px, 1.5vw, 26px);
+  color: var(--text-muted);
+  min-height: 1.4em;
+}
+.cover-prefix { color: var(--text-dim); margin-right: 1ch; }
+
+/* Каретка — единственный жёлтый элемент титула. */
+.cover-caret {
+  display: inline-block;
+  width: 0.55ch;
+  height: 1.05em;
+  margin-left: 3px;
+  vertical-align: text-bottom;
+  background: var(--accent);
+  animation: caret-blink 1.05s steps(1) infinite;
+}
+@keyframes caret-blink { 50% { opacity: 0; } }
+
+.cover-title {
+  margin: 0;
+  font-size: clamp(44px, 5.6vw, 104px);
+  font-weight: var(--w-display);
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  opacity: 0;
+  transform: translateY(16px);
+  font-variation-settings: "wght" 200;
+  transition: opacity 0.7s var(--ease-out) 0.35s,
+    transform 0.7s var(--ease-out) 0.35s,
+    font-variation-settings 0.7s ease 0.35s;
+}
+.cover-sub {
+  margin: 2.6vh 0 0;
+  font-size: clamp(15px, 1.7vw, 30px);
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.7s var(--ease-out) 0.6s;
+}
+.layout-cover.typed .cover-title {
+  opacity: 1;
+  transform: none;
+  font-variation-settings: "wght" 300;
+}
+.layout-cover.typed .cover-sub { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .cover-title, .cover-sub { transition: none; }
+}
+
+/* QR-код на финальном слайде */
+.break-qr { margin: clamp(28px, 8vh, 72px) 0 0; }
+.break-qr img {
+  display: block;
+  width: clamp(120px, 13vw, 200px);
+  border-radius: 12px;
+}
+.break-qr figcaption {
+  margin-top: 12px;
+  font-size: clamp(12px, 1.2vw, 17px);
+  color: var(--text-dim);
+}
+
 /* ---------- Служебная обвязка (не контент слайда) ---------- */
 .progress { position: fixed; left: 0; right: 0; bottom: 0; height: 2px; z-index: 5; }
 .progress b {
@@ -259,6 +330,29 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal { animation: none; opacity: 1; }
+}
+
+/* Заголовок слайда входит «набирая вес»: Manrope вариативный,
+   вес анимируется от тонкого 200 к рабочему 300. */
+.slide .title.reveal {
+  animation: title-in 700ms var(--ease-out) forwards;
+  animation-delay: 40ms;
+}
+@keyframes title-in {
+  from { opacity: 0; transform: translateY(14px); font-variation-settings: "wght" 200; }
+  to { opacity: 1; transform: none; font-variation-settings: "wght" 300; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide .title.reveal { animation: none; opacity: 1; }
+}
+
+/* ---------- Фрагменты ----------
+   Пункт скрыт, пока докладчик не проявит его пробелом или стрелкой.
+   Класс frag-on ставит js/slides.js. */
+.frag { opacity: 0; }
+.frag.frag-on { animation: reveal var(--reveal-dur) var(--ease-out) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .frag.frag-on { animation: none; opacity: 1; }
 }
 
 /* Когда мышь замерла, курсор прячется: докладчик листает с клавиатуры,

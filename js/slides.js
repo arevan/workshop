@@ -170,7 +170,25 @@
             b.items.map((it) => `<p ${reveal()}>${MD.inline(it)}</p>`).join('') + '</div>';
         }
       }
+      // Необязательный QR-код (frontmatter: qr + qrlabel) — для финального слайда.
+      if (meta.qr) {
+        html += `<figure class="break-qr reveal" style="--i:${revealIndex++}">` +
+          `<img src="${MD.escapeHtml(meta.qr)}" alt="QR-код" onerror="this.closest('figure').hidden = true">` +
+          (meta.qrlabel ? `<figcaption>${MD.inline(meta.qrlabel)}</figcaption>` : '') +
+          '</figure>';
+      }
       return html + '</div>';
+    },
+
+    // Титульный слайд: промт печатает сам себя (см. startCoverTyping),
+    // а когда допечатан — из него появляется заголовок.
+    cover(blocks, meta) {
+      const prompt = meta.prompt || '';
+      return `<div class="cover">
+        <p class="cover-prompt"><span class="cover-prefix">&gt;</span><span class="cover-type" data-text="${MD.escapeHtml(prompt)}"></span><span class="cover-caret"></span></p>
+        <h1 class="cover-title">${MD.inline(meta.title || '')}</h1>
+        ${meta.subtitle ? `<p class="cover-sub">${MD.inline(meta.subtitle)}</p>` : ''}
+      </div>`;
     },
   };
 
@@ -182,8 +200,8 @@
     el.className = 'slide layout-' + layout;
     if (s.meta.variant) el.classList.add('variant-' + s.meta.variant);
 
-    if (layout === 'break') {
-      el.innerHTML = LAYOUTS.break(s.blocks, s.meta);
+    if (layout === 'break' || layout === 'cover') {
+      el.innerHTML = LAYOUTS[layout](s.blocks, s.meta);
       return el;
     }
 
@@ -205,6 +223,62 @@
     return el;
   });
 
+  /* ---------- Фрагменты ----------
+     Пункты слайда появляются по одному: «вперёд» сначала проявляет
+     следующий пункт и только потом листает. Прямая ссылка на слайд
+     показывает его целиком. Отключается в frontmatter: fragments: false. */
+  els.forEach((el, i) => {
+    const meta = slides[i].meta;
+    const layout = meta.layout || 'list';
+    el._frags = [];
+    el._shown = 0;
+    if (meta.fragments === 'false' || layout === 'break' || layout === 'cover') return;
+
+    // Один проход в порядке документа. Пара (term + desc) — один фрагмент.
+    el.querySelectorAll('.item, .col p, .example, .note, .thesis, .pair').forEach((n) => {
+      if (n.classList.contains('pair')) el._frags.push([...n.children]);
+      else el._frags.push([n]);
+    });
+    // Фрагменты не участвуют в каскадном появлении — у них свой момент.
+    el._frags.forEach((g) => g.forEach((n) => {
+      n.classList.remove('reveal');
+      n.classList.add('frag');
+    }));
+  });
+
+  function setFragment(el, k, on) {
+    el._frags[k].forEach((n) => n.classList.toggle('frag-on', on));
+  }
+  function showAllFragments(el) {
+    el._frags.forEach((g, k) => setFragment(el, k, true));
+    el._shown = el._frags.length;
+  }
+
+  /* ---------- Печатающийся промт на титуле ---------- */
+  let typingTimer;
+  function startCoverTyping(el) {
+    clearInterval(typingTimer);
+    const t = el.querySelector('.cover-type');
+    if (!t) return;
+    const full = t.dataset.text || '';
+    el.classList.remove('typed');
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      t.textContent = full;
+      el.classList.add('typed');
+      return;
+    }
+    t.textContent = '';
+    let n = 0;
+    typingTimer = setInterval(() => {
+      n++;
+      t.textContent = full.slice(0, n);
+      if (n >= full.length) {
+        clearInterval(typingTimer);
+        el.classList.add('typed');
+      }
+    }, 42);
+  }
+
   /* ================= 3. Навигация ================= */
 
   const counter = document.getElementById('counter');
@@ -214,12 +288,21 @@
   let cur = -1;
   let notesOpen = false;
 
-  function go(next, updateHash = true) {
+  // fragMode: 'start' — слайд открывается с нуля, пункты скрыты (обычный
+  // ход вперёд); 'full' — слайд показан целиком (возврат назад, прямая ссылка).
+  function go(next, updateHash = true, fragMode = 'start') {
     const n = Math.max(0, Math.min(els.length - 1, next));
     if (n === cur) return;
     if (els[cur]) els[cur].classList.remove('active');
     cur = n;
-    els[cur].classList.add('active');
+    const el = els[cur];
+    el.classList.add('active');
+    if (fragMode === 'full') showAllFragments(el);
+    else {
+      el._shown = 0;
+      el._frags.forEach((g, k) => setFragment(el, k, false));
+    }
+    startCoverTyping(el);
     counter.textContent = pad2(cur + 1) + ' / ' + pad2(els.length);
     bar.style.width = ((cur + 1) / els.length) * 100 + '%';
     document.title = pad2(cur + 1) + ' · ' + (slides[cur].meta.title || 'Слайд');
@@ -228,17 +311,31 @@
     if (notesOpen) renderNotes();
   }
 
+  // Вперёд: сначала следующий пункт, потом следующий слайд.
+  function forward() {
+    const el = els[cur];
+    if (el && el._shown < el._frags.length) { setFragment(el, el._shown++, true); return; }
+    go(cur + 1, true, 'start');
+  }
+  // Назад: сначала спрятать последний пункт, потом предыдущий слайд целиком.
+  function backward() {
+    const el = els[cur];
+    if (el && el._shown > 0) { setFragment(el, --el._shown, false); return; }
+    go(cur - 1, true, 'full');
+  }
+
   // Клавиатура. e.code вместо e.key — работает и в русской раскладке.
   addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     switch (e.code) {
       case 'ArrowRight':
-      case 'PageDown': go(cur + 1); break;              // PageDown/Up шлют кликеры
+      case 'PageDown': forward(); break;                // PageDown/Up шлют кликеры
       case 'ArrowLeft':
-      case 'PageUp': go(cur - 1); break;
-      case 'Space': e.preventDefault(); go(cur + (e.shiftKey ? -1 : 1)); break;
-      case 'Home': go(0); break;
-      case 'End': go(els.length - 1); break;
+      case 'PageUp': backward(); break;
+      case 'Space': e.preventDefault(); e.shiftKey ? backward() : forward(); break;
+      case 'ArrowDown': showAllFragments(els[cur]); break; // раскрыть слайд целиком
+      case 'Home': go(0, true, 'start'); break;
+      case 'End': go(els.length - 1, true, 'full'); break;
       case 'KeyF': toggleFullscreen(); break;
       case 'KeyN':
       case 'KeyS': toggleNotes(); break;
@@ -250,7 +347,7 @@
   stage.addEventListener('click', (e) => {
     if (e.target.closest('a')) return;
     if (String(getSelection())) return;
-    go(cur + 1);
+    forward();
   });
 
   // Свайп на таче.
@@ -263,7 +360,7 @@
   addEventListener('touchend', (e) => {
     const dx = e.changedTouches[0].clientX - touchX;
     const dy = e.changedTouches[0].clientY - touchY;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) go(cur + (dx < 0 ? 1 : -1));
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) (dx < 0 ? forward() : backward());
   }, { passive: true });
 
   function toggleFullscreen() {
@@ -310,6 +407,7 @@
   noticeMouse(); // запускаем отсчёт сразу, не дожидаясь первого движения
 
   // Старт: открываем слайд из адреса (#7) или первый.
-  addEventListener('hashchange', () => go((parseInt(location.hash.slice(1), 10) || 1) - 1, false));
-  go((parseInt(location.hash.slice(1), 10) || 1) - 1);
+  // По прямой ссылке слайд показывается целиком, без скрытых пунктов.
+  addEventListener('hashchange', () => go((parseInt(location.hash.slice(1), 10) || 1) - 1, false, 'full'));
+  go((parseInt(location.hash.slice(1), 10) || 1) - 1, true, 'full');
 })();
