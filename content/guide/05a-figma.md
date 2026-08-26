@@ -27,14 +27,12 @@ slug: figma
 В приложении Claude или на claude.ai:
 
 1. **Customize** → **Connectors**
-2. Нажми **+** → **Add custom connector**
-3. Вставь адрес сервера и нажми **Add**:
+2. Найди в списке **Figma** — через поиск или фильтр **Popular for** → **Design**
+3. Нажми **Connect** и подтверди вход в Figma
 
-```
-https://mcp.figma.com/mcp
-```
+Когда подключение готово, напротив Figma в списке появится галочка.
 
-Останется подтвердить вход в Figma — откроется браузер.
+Если в списке её вдруг нет, добавь вручную: **Add** → **Add custom connector**, адрес сервера — `https://mcp.figma.com/mcp`.
 
 ## Подключить в Codex
 
