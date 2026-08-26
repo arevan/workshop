@@ -63,8 +63,10 @@ mark { background: none; color: var(--accent); }
   pointer-events: none; /* фон не перехватывает клики и выделение */
   transition: opacity 0.4s;
 }
-/* Слайд может попросить чистый фон: dots: false в его frontmatter */
+/* Слайд управляет фоном через frontmatter:
+   dots: false — чистый фон, dots: dim — точки еле заметны. */
 body.no-dots #dots { opacity: 0; }
+body.dim-dots #dots { opacity: 0.35; }
 .hub-wrap, .stage, .slides-home, .progress, .counter, .hint, .notes {
   position: relative;
   z-index: 1;

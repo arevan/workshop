@@ -200,8 +200,8 @@
 
 .orbit {
   position: relative;
-  width: min(88vw, 1180px);
-  height: clamp(220px, 42vh, 420px);
+  width: min(88vw, 1240px);
+  height: clamp(260px, 56vh, 560px);
 }
 /* Линия орбиты — сплошная и тихая: она показывает путь, но не спорит
    со словами, которые по ней едут. */

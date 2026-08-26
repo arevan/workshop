@@ -195,8 +195,9 @@
         return `<span class="orbit-word${accent ? ' accent' : ''}">` +
           `<i class="orbit-num">${pad2(i + 1)}</i>${MD.escapeHtml(text)}</span>`;
       }).join('');
+      // Заголовка на слайде нет намеренно: кольцо само себя объясняет,
+      // а title из frontmatter нужен для навигации и заметок спикера.
       return `<div class="orbit-wrap">
-        <h1 class="title reveal" style="--i:0">${MD.inline(meta.title || '')}</h1>
         <div class="orbit" aria-label="${MD.escapeHtml(words.join(' → '))}">
           <svg class="orbit-path" aria-hidden="true"><ellipse class="orbit-line" /></svg>
           ${items}
@@ -381,8 +382,11 @@
     el.classList.add('active');
     startCoverTyping(el);
     startOrbit(el);
-    // Слайд может погасить фоновые точки: dots: false в frontmatter.
-    document.body.classList.toggle('no-dots', slides[cur].meta.dots === 'false');
+    // Слайд может управлять фоном: dots: false — выключить,
+    // dots: dim — оставить еле заметными.
+    const dotsMode = slides[cur].meta.dots;
+    document.body.classList.toggle('no-dots', dotsMode === 'false');
+    document.body.classList.toggle('dim-dots', dotsMode === 'dim');
     counter.textContent = pad2(cur + 1) + ' / ' + pad2(els.length);
     bar.style.width = ((cur + 1) / els.length) * 100 + '%';
     document.title = pad2(cur + 1) + ' · ' + (slides[cur].meta.title || 'Слайд');
