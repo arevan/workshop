@@ -59,7 +59,16 @@
 .g-section p { margin: 0 0 14px; color: var(--text-soft); font-size: 16.5px; line-height: 1.65; }
 .g-section ul, .g-section ol { margin: 0 0 14px; padding-left: 22px; color: var(--text-soft); font-size: 16.5px; line-height: 1.65; }
 .g-section li { margin-bottom: 8px; }
-.g-section li::marker { color: var(--text-dim); }
+
+/* Списки без буллетов-точек (анти-паттерн проекта): тусклое тире */
+.g-section ul { list-style: none; padding-left: 0; }
+.g-section ul > li { position: relative; padding-left: 22px; }
+.g-section ul > li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--text-dim);
+}
 
 .g-section pre {
   margin: 4px 0 18px;
@@ -68,9 +77,69 @@
   border-radius: 10px;
   overflow-x: auto;
 }
-.g-section pre code { font-size: 14px; color: var(--text); line-height: 1.55; }
+/* Длинные ссылки переносим, а не прячем за горизонтальным скроллом */
+.g-section pre code { font-size: 14px; color: var(--text); line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
 .g-section code { background: var(--surface); padding: 2px 6px; border-radius: 5px; font-size: 0.9em; color: var(--text-soft); }
 .g-section pre code { background: none; padding: 0; }
 
+/* Ссылки в тексте гайда: жёлтый — акцент, поэтому в покое ссылка
+   белая с тусклым подчёркиванием, а жёлтой становится при наведении. */
+.g-section a {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--text-dim);
+  transition: color 0.15s, border-color 0.15s;
+}
+.g-section a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
 /* Пометка для разделов, которые ещё в работе */
 .g-section .wip { color: var(--text-dim); }
+
+/* ---------- Скриншоты ----------
+   Скругления обязательны: скрин интерфейса на тёмном фоне без них
+   выглядит вырезанным. Файлы лежат в assets/guide/. */
+.shot { margin: 22px 0 26px; }
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+}
+/* Вертикальные скрины телефона — уже, чтобы не занимать всю колонку */
+.shot-phone img { max-width: 290px; border-radius: 22px; }
+.shot figcaption {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* Шаги внутри раздела: номер тусклый, как на слайдах */
+.g-section ol { counter-reset: step; list-style: none; padding-left: 0; }
+.g-section ol > li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 42px;
+  margin-bottom: 14px;
+}
+.g-section ol > li::before {
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  font-size: 13px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Предупреждение / грабли — без карточки, только жёлтая линия слева */
+.g-section blockquote {
+  margin: 18px 0;
+  padding-left: 18px;
+  border-left: 2px solid var(--accent);
+}
+.g-section blockquote p { margin: 0; color: var(--text-soft); }
+
+@media (max-width: 700px) {
+  .shot-phone img { max-width: 220px; }
+}

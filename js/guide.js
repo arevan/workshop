@@ -25,6 +25,17 @@
     return blocks.map((b) => {
       if (b.type === 'h2') return `<h3>${MD.inline(b.text)}</h3>`;
       if (b.type === 'code') return `<pre><code>${MD.escapeHtml(b.text)}</code></pre>`;
+      // Картинка. Если файла ещё нет — прячем весь блок, чтобы не было
+      // «сломанной» иконки: гайд читается и без скриншотов.
+      if (b.type === 'img') {
+        const cls = /phone|ios-/.test(b.src) ? 'shot shot-phone' : 'shot';
+        return `<figure class="${cls}">` +
+          `<img src="${MD.escapeHtml(b.src)}" alt="${MD.escapeHtml(b.alt)}"` +
+          ` onerror="this.closest('figure').hidden = true">` +
+          (b.alt ? `<figcaption>${MD.inline(b.alt)}</figcaption>` : '') +
+          '</figure>';
+      }
+      if (b.type === 'note') return `<blockquote><p>${MD.inline(b.text)}</p></blockquote>`;
       if (b.type === 'list') return '<ul>' + b.items.map((i) => `<li>${MD.inline(i)}</li>`).join('') + '</ul>';
       if (b.type === 'olist') return '<ol>' + b.items.map((i) => `<li>${MD.inline(i)}</li>`).join('') + '</ol>';
       if (b.type === 'hr') return '';

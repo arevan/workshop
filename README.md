@@ -51,7 +51,10 @@ python3 -m http.server 4173
   `title`, `aside` — правый абзац, `notes` — заметки спикера, `layout`,
   `enabled: false` — выключить слайд; `==текст==` — жёлтый акцент)
 - порядок слайдов: `content/slides/manifest.json`
-- гайд: `content/guide/*.md`
+- гайд: `content/guide/*.md` (обычный markdown плюс `> текст` — заметка
+  на полях и `![Подпись](../assets/guide/файл.png)` — скриншот)
+- скриншоты для гайда: `assets/guide/` — какой файл куда встаёт, описано
+  в `assets/guide/README.md`
 - цвета, шрифты, скорость анимаций: `css/tokens.css`
 
 ## Структура

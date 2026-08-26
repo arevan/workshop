@@ -5,11 +5,13 @@
  *   ==текст==     жёлтый акцент
  *   **текст**     жирный
  *   `текст`       код
+ *   [текст](url)  ссылка
  *   ## Заголовок  подзаголовок / колонка
  *   - пункт       список
  *   1. пункт      нумерованный список
  *   ---           разделитель колонок
  *   ```…```       блок кода (в гайде)
+ *   ![подпись](файл.png)   картинка (отдельной строкой, только в гайде)
  *
  * Его можно прочитать целиком за пару минут — это и есть цель.
  */
@@ -25,6 +27,9 @@ function inline(s) {
     .replace(/==(.+?)==/g, '<mark>$1</mark>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`(.+?)`/g, '<code>$1</code>')
+    // ссылка [текст](url) — внешние открываем в новой вкладке
+    .replace(/\[(.+?)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\[(.+?)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
     // стрелки в строках-процессах приглушаем
     .replaceAll(' → ', '<span class="arr">→</span>');
 }
@@ -83,6 +88,7 @@ function parseFrontmatter(text) {
  *   { type: 'olist', items }   список «1. …»
  *   { type: 'hr' }             разделитель «---»
  *   { type: 'code', text }     блок кода в ```…```
+ *   { type: 'img', src, alt }  картинка «![подпись](файл.png)»
  */
 function parseBlocks(body) {
   const blocks = [];
@@ -109,6 +115,10 @@ function parseBlocks(body) {
     if (!t) { list = null; continue; }
     if (t.startsWith('## ')) { list = null; blocks.push({ type: 'h2', text: t.slice(3) }); continue; }
     if (t === '---') { list = null; blocks.push({ type: 'hr' }); continue; }
+    const img = t.match(/^!\[(.*?)\]\((.+?)\)$/);
+    if (img) { list = null; blocks.push({ type: 'img', alt: img[1], src: img[2] }); continue; }
+    // «> текст» — заметка на полях: грабли, предупреждение
+    if (t.startsWith('> ')) { list = null; blocks.push({ type: 'note', text: t.slice(2) }); continue; }
     if (t.startsWith('- ')) {
       if (!list || list.type !== 'list') { list = { type: 'list', items: [] }; blocks.push(list); }
       list.items.push(t.slice(2));

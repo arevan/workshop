@@ -81,7 +81,7 @@
   letter-spacing: 0.01em;
 }
 .line:last-child { margin-bottom: 0; }
-.arr { color: var(--text-dim); padding: 0 0.45em; font-weight: 300; }
+.line .arr { padding: 0 0.45em; }
 
 /* ---------- Пары «белый термин — серое пояснение» ---------- */
 .pairs {
