@@ -230,18 +230,17 @@
   text-shadow: 0 0 10px var(--bg), 0 0 10px var(--bg), 0 0 6px var(--bg);
   will-change: transform, opacity;
 }
-.orbit-word.accent { color: var(--accent); }
-/* Номер шага: цикл замкнут, но порядок обхода должен читаться */
+/* Номер шага: цикл замкнут, но порядок обхода должен читаться.
+   Цвет наследуется от слова, поэтому номер уходит в глубину вместе с ним. */
 .orbit-num {
   margin-right: 0.55em;
   font-size: 0.5em;
   font-style: normal;
-  color: var(--text-dim);
+  color: inherit;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.06em;
   vertical-align: 0.35em;
 }
-.orbit-word.accent .orbit-num { color: currentColor; opacity: 0.6; }
 
 /* ---------- Титульный слайд ----------
    Промт печатает сам себя (js/slides.js ставит класс typed, когда

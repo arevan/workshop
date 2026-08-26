@@ -256,6 +256,17 @@
      синусом и косинусом. Ближние (нижняя половина) крупнее и ярче —
      от этого плоский эллипс читается как наклонённое кольцо. */
   let orbitRaf = 0;
+
+  // Цвет слова на орбите меняется вместо прозрачности: полупрозрачный
+  // текст пропускает сквозь себя линию орбиты и выглядит перечёркнутым.
+  const hexToRgb = (hex) => {
+    const h = hex.trim().replace('#', '');
+    const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+    return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16));
+  };
+  const mix = (a, b, t) =>
+    `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
+
   function startOrbit(slide) {
     cancelAnimationFrame(orbitRaf); // остановить орбиту прошлого слайда
     const box = slide.querySelector('.orbit');
@@ -266,6 +277,13 @@
     const step = (Math.PI * 2) / words.length; // равные промежутки по кругу
     const SPEED = 0.00016;                     // радиан в миллисекунду
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Дальние слова уходят к тусклому серому, ближние — к белому.
+    const palette = getComputedStyle(document.documentElement);
+    const FAR = hexToRgb(palette.getPropertyValue('--text-dim'));
+    const NEAR = hexToRgb(palette.getPropertyValue('--text'));
+    const ACCENT = hexToRgb(palette.getPropertyValue('--accent'));
+    const ACCENT_FAR = ACCENT.map((v) => Math.round(v * 0.45)); // приглушённый жёлтый
 
     const svg = box.querySelector('.orbit-path');
     const ellipse = svg && svg.querySelector('.orbit-line');
@@ -299,9 +317,12 @@
         const depth = (Math.sin(a) + 1) / 2;
         const scale = 0.78 + depth * 0.32;
         el.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(${scale})`;
-        // Даже дальние слова остаются читаемыми — иначе линия орбиты
-        // просвечивает сквозь буквы и кажется, что она их перечёркивает.
-        el.style.opacity = 0.62 + depth * 0.38;
+        // Глубину показываем цветом, а не прозрачностью: текст остаётся
+        // непрозрачным и линия орбиты сквозь него не просвечивает.
+        const accent = el.classList.contains('accent');
+        el.style.color = accent
+          ? mix(ACCENT_FAR, ACCENT, depth)
+          : mix(FAR, NEAR, depth);
         el.style.zIndex = Math.round(depth * 100) + 1;
       });
     };
