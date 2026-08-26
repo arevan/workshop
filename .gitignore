@@ -7,3 +7,7 @@
 # Рабочие материалы организатора — не для раздачи участникам
 vibecoding_workshop_theory_v6.pptx
 vibecoding_workshop_web_brief.md
+
+# Исходные скриншоты: содержат персональные данные (почта, ФИО, Team ID).
+# В репозиторий попадают только обработанные версии из assets/guide/.
+assets/screenshots/
