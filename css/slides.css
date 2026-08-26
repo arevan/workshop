@@ -203,7 +203,8 @@
   width: min(88vw, 1180px);
   height: clamp(220px, 42vh, 420px);
 }
-/* Тонкая линия орбиты — подсказка глазу, что путь замкнут */
+/* Линия орбиты. Пунктир бежит по часовой стрелке — в ту же сторону,
+   что и слова, поэтому направление цикла видно даже на стоп-кадре. */
 .orbit-path {
   position: absolute;
   inset: 0;
@@ -212,11 +213,19 @@
 }
 .orbit-path ellipse {
   fill: none;
-  stroke: var(--text-dim);
-  /* non-scaling-stroke: толщина в пикселях экрана, а не в единицах viewBox */
-  stroke-width: 1;
-  opacity: 0.45;
-  vector-effect: non-scaling-stroke;
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 14;   /* короткие штрихи с большими промежутками */
+  stroke-linecap: round;
+  opacity: 0.8;
+  animation: orbit-flow 1.6s linear infinite;
+}
+@keyframes orbit-flow {
+  /* Смещаем штрихи ровно на длину одного повтора (2 + 14) */
+  to { stroke-dashoffset: -16; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbit-path ellipse { animation: none; }
 }
 .orbit-word {
   position: absolute;
