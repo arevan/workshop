@@ -200,7 +200,8 @@
           ${b.alt ? `<figcaption>${MD.inline(b.alt)}</figcaption>` : ''}
         </figure>`;
       }).join('');
-      return `<div class="phones">${phones}</div>`;
+      // Число телефонов уходит в CSS: от него зависит их размер.
+      return `<div class="phones" style="--count:${items.length || 1}">${phones}</div>`;
     },
 
     // Орбита: слова цикла едут по наклонённому эллипсу. Порядок и текст

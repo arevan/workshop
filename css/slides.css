@@ -196,10 +196,12 @@
    Мокап собран типографикой и рамкой, без картинок: тонкий корпус,
    скруглённый экран, вырез сверху. Внутри — запись экрана. */
 .phones {
+  --gap: clamp(12px, 2.4vw, 44px);
+  --count: 5; /* сколько телефонов в ряду — проставляет js/slides.js */
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: clamp(12px, 2.4vw, 44px);
+  gap: var(--gap);
   width: 100%;
 }
 .phone {
@@ -210,11 +212,16 @@
   align-items: center;
   gap: clamp(10px, 2vh, 20px);
 }
-/* Высоту задаём от экрана, ширину считает aspect-ratio — иначе
-   на широком слайде телефоны вырастают и упираются в подписи. */
+/* Высоту задаём от экрана, ширину считает aspect-ratio.
+   Второе слагаемое в min() — сколько влезает по ширине при текущем числе
+   телефонов: три демки занимают экран крупнее, пять сами ужимаются,
+   и ряд не упирается в поля слайда. */
 .phone-frame {
   position: relative;
-  height: clamp(180px, 48vh, 430px);
+  height: min(
+    clamp(180px, 56vh, 460px),
+    calc((100vw - 2 * var(--pad-x) - (var(--count) - 1) * var(--gap)) / var(--count) * 19.5 / 9)
+  );
   aspect-ratio: 9 / 19.5;
   border: 1.5px solid var(--text-dim);
   border-radius: clamp(16px, 2.2vw, 34px);
