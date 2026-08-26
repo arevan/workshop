@@ -22,12 +22,11 @@
 .g-back:hover { color: var(--accent); }
 
 .g-head h1 {
-  margin: 0 0 16px;
+  margin: 0 0 clamp(32px, 6vh, 56px);
   font-size: clamp(36px, 8vw, 64px);
   font-weight: var(--w-display);
   letter-spacing: -0.015em;
 }
-.g-intro { margin: 0 0 48px; color: var(--text-muted); line-height: 1.6; font-size: 16px; }
 
 /* Оглавление */
 .g-toc { display: grid; gap: 10px; margin-bottom: 80px; }

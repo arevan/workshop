@@ -62,8 +62,6 @@
     <header class="g-head">
       <a class="g-back" href="../index.html">← Воркшоп</a>
       <h1>Гайд</h1>
-      <p class="g-intro">Раздатка воркшопа: окружение для iPhone и Android, шаблоны промтов,
-      git в двух фразах и чек-лист перед хакатоном. Открывается с телефона — сохрани ссылку.</p>
     </header>
     <nav class="g-toc">${toc}</nav>
     ${bodyHtml}`;
