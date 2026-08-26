@@ -1,0 +1,13 @@
+{
+  "sections": [
+    "01-project.md",
+    "02-ios.md",
+    "03-android.md",
+    "04-skills.md",
+    "05-git.md",
+    "06-prompts.md",
+    "07-broken.md",
+    "08-checklist.md",
+    "09-rules.md"
+  ]
+}

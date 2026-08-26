@@ -1,0 +1,284 @@
+/*
+  Слайдовый режим. Сетка повторяет утверждённую презентацию:
+  заголовок слева сверху, правый абзац-тезис в колонке справа,
+  контент ниже на всю ширину. Всё — типографикой, без декора.
+*/
+
+.slides-page { overflow: hidden; height: 100dvh; }
+
+.stage { position: fixed; inset: 0; background: var(--bg); }
+
+/* ---------- Каркас слайда ---------- */
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none; /* показан только .active — см. ниже */
+  grid-template-columns: minmax(0, 1fr) clamp(230px, 30.5vw, 560px);
+  grid-template-rows: auto 1fr auto;
+  column-gap: clamp(32px, 4.5vw, 90px);
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+}
+.slide.active { display: grid; }
+
+.title {
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: var(--w-display);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+/* Правый абзац-тезис */
+.aside {
+  font-size: var(--fs-aside);
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding-top: clamp(6px, 1.6vh, 18px);
+}
+
+.body {
+  grid-column: 1 / -1;
+  align-self: center;
+  padding-bottom: 2vh;
+}
+
+/* Тусклая строка внизу слайда («Дальше — …») */
+.foot {
+  grid-column: 1 / -1;
+  align-self: end;
+  font-size: var(--fs-foot);
+  color: var(--text-dim);
+}
+
+/* ---------- Списки с номерами 01 02 03 ---------- */
+.items { display: grid; row-gap: clamp(14px, 4.6vh, 46px); }
+
+.item {
+  display: grid;
+  grid-template-columns: clamp(34px, 6vw, 96px) 1fr;
+  align-items: baseline;
+}
+.num {
+  font-size: var(--fs-num);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+.txt { font-size: var(--fs-item); line-height: 1.3; }
+
+/* variant: quiet — приглушённый мелкий список под строкой-процессом (слайд 06) */
+.variant-quiet .items { row-gap: clamp(10px, 3.2vh, 32px); }
+.variant-quiet .txt { font-size: clamp(14px, 1.55vw, 28px); color: var(--text-soft); }
+
+/* Чек-лист: жёлтые галочки вместо номеров (слайд «Когда демка готова») */
+.check { font-size: calc(var(--fs-item) * 0.85); color: var(--accent); }
+
+/* ---------- Строка-процесс: Idea → Build → Run ---------- */
+.line {
+  margin: 0 0 clamp(28px, 8.6vh, 86px);
+  font-size: var(--fs-line);
+  color: var(--text-soft);
+  letter-spacing: 0.01em;
+}
+.line:last-child { margin-bottom: 0; }
+.arr { color: var(--text-dim); padding: 0 0.45em; font-weight: 300; }
+
+/* ---------- Пары «белый термин — серое пояснение» ---------- */
+.pairs {
+  display: grid;
+  grid-template-columns: fit-content(46vw) 1fr;
+  column-gap: clamp(24px, 3.5vw, 70px);
+  row-gap: clamp(16px, 6vh, 60px);
+  align-items: baseline;
+}
+.pair { display: contents; } /* term и desc встают в колонки общей сетки */
+.term { font-size: var(--fs-term); font-weight: var(--w-term); }
+.desc { font-size: var(--fs-desc); color: var(--text-muted); line-height: 1.45; }
+.pair.accent .term, .pair.accent .desc { color: var(--accent); }
+
+/* ---------- Две колонки ---------- */
+.cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  column-gap: clamp(28px, 4.2vw, 84px);
+}
+.col h3 {
+  margin: 0 0 clamp(14px, 4vh, 38px);
+  font-size: clamp(16px, 2.3vw, 42px);
+  font-weight: var(--w-body);
+}
+.col p { margin: 0; line-height: 1.35; }
+/* колонки без заголовков (слайд про Figma): белые строки, много воздуха */
+.col:not(.with-header) p {
+  color: var(--text);
+  font-size: clamp(15px, 1.9vw, 34px);
+  margin-bottom: clamp(16px, 6.6vh, 66px);
+}
+/* колонки с заголовками (iPhone / Android): серые строки плотнее */
+.col.with-header p {
+  color: var(--text-muted);
+  font-size: clamp(13px, 1.55vw, 28px);
+  margin-bottom: clamp(8px, 2.4vh, 24px);
+}
+.col p:last-child { margin-bottom: 0; }
+
+/* Абзацы после основного контента */
+.note {
+  margin: clamp(20px, 7vh, 66px) 0 0;
+  font-size: var(--fs-note);
+  color: var(--text-muted);
+  line-height: 1.45;
+  max-width: 85vw;
+}
+.thesis {
+  margin: clamp(14px, 4.8vh, 46px) 0 0;
+  font-size: var(--fs-thesis);
+  color: var(--accent);
+}
+
+/* ---------- Сравнение промтов: структура слева, ПЛОХО/ХОРОШО справа ---------- */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr clamp(240px, 34vw, 620px);
+  column-gap: clamp(32px, 6vw, 120px);
+  align-items: start;
+}
+.compare .pairs {
+  grid-template-columns: fit-content(30vw) 1fr;
+  column-gap: clamp(18px, 2.5vw, 48px);
+  row-gap: clamp(12px, 4vh, 40px);
+}
+.compare .term { font-size: clamp(14px, 1.75vw, 30px); }
+.compare .desc { font-size: clamp(12px, 1.35vw, 24px); }
+.example .label {
+  display: block;
+  margin-bottom: clamp(8px, 2vh, 20px);
+  font-size: clamp(10px, 1.15vw, 20px);
+  letter-spacing: 0.27em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.example.good .label { color: var(--accent); }
+.example p {
+  margin: 0;
+  font-size: clamp(13px, 1.45vw, 26px);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.example.good p { color: var(--text); }
+.example + .example { margin-top: clamp(24px, 8vh, 72px); }
+
+/* ---------- Перебивка: крупная фраза слева по вертикальному центру ---------- */
+.layout-break { align-items: center; padding: 0 var(--pad-x); }
+.layout-break.active { display: flex; }
+.break-wrap { width: 100%; }
+.layout-break .title { font-size: clamp(38px, 4.8vw, 92px); }
+.break-sub {
+  margin: 2.5vh 0 0;
+  color: var(--text-muted);
+  font-size: clamp(15px, 1.7vw, 30px);
+}
+.layout-break .line { margin: clamp(24px, 7vh, 66px) 0 0; color: var(--text-muted); }
+.break-list { margin-top: 5.5vh; }
+.break-list p { margin: 0 0 2.2vh; color: var(--text-soft); font-size: clamp(15px, 1.7vw, 30px); }
+
+/* ---------- Служебная обвязка (не контент слайда) ---------- */
+.progress { position: fixed; left: 0; right: 0; bottom: 0; height: 2px; z-index: 5; }
+.progress b {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--progress);
+  transition: width 0.35s var(--ease-out);
+}
+.counter {
+  position: fixed;
+  right: var(--pad-x);
+  bottom: 3.2vh;
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  z-index: 5;
+}
+.hint {
+  position: fixed;
+  left: var(--pad-x);
+  bottom: 3.2vh;
+  font-size: 12px;
+  color: var(--text-dim);
+  transition: opacity 0.6s;
+  z-index: 5;
+}
+.hint.gone { opacity: 0; }
+
+/* Оверлей заметок спикера (клавиша N или S) */
+.notes {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  max-height: 52vh;
+  overflow: auto;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transform: translateY(102%);
+  transition: transform 0.25s var(--ease-out);
+  z-index: 10;
+}
+.notes.open { transform: none; }
+.notes-inner { padding: 28px var(--pad-x) 36px; max-width: 980px; }
+.notes-label {
+  display: block;
+  margin-bottom: 14px;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.notes-inner p { margin: 0 0 10px; color: var(--text-soft); font-size: 16px; line-height: 1.6; }
+.notes-none { color: var(--text-dim); }
+.notes-next {
+  display: block;
+  margin-top: 16px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+/* ---------- Появление строк ----------
+   Каждый элемент слайда получает --i (порядковый номер) и выезжает
+   с небольшой задержкой. Параметры — в tokens.css. */
+.reveal {
+  opacity: 0;
+  animation: reveal var(--reveal-dur) var(--ease-out) forwards;
+  animation-delay: calc(var(--i, 0) * var(--reveal-step) + 40ms);
+}
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(var(--reveal-shift)); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { animation: none; opacity: 1; }
+}
+
+/* Прячем курсор, когда мышь замерла (докладчик листает с клавиатуры) */
+.no-cursor, .no-cursor * { cursor: none; }
+
+/* ---------- Мобильный фолбэк: «не разваливается» ---------- */
+@media (max-width: 700px) {
+  .slide {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    column-gap: 0;
+    padding: 7vh 24px 9vh;
+    overflow-y: auto;
+  }
+  .aside { padding-top: 14px; }
+  .body { align-self: start; padding-top: 4.5vh; }
+  .compare { grid-template-columns: 1fr; row-gap: 40px; }
+  .cols { grid-template-columns: 1fr; }
+  .col:not(.with-header) p { margin-bottom: 20px; }
+  .col + .col { margin-top: 28px; }
+  .pairs { grid-template-columns: 1fr; row-gap: 6px; }
+  .pair .desc { margin-bottom: 18px; }
+}

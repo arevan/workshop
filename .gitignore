@@ -1,0 +1,9 @@
+# Системное
+.DS_Store
+
+# Локальная обвязка Claude Code (машинные пути)
+.claude/
+
+# Рабочие материалы организатора — не для раздачи участникам
+vibecoding_workshop_theory_v6.pptx
+vibecoding_workshop_web_brief.md
