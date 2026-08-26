@@ -184,24 +184,21 @@
 .break-list { margin-top: 5.5vh; }
 .break-list p { margin: 0 0 2.2vh; color: var(--text-soft); font-size: clamp(15px, 1.7vw, 30px); }
 
+/* variant: center — одно слово по центру экрана. Момент переключения:
+   докладчик уходит со слайдов к живой сборке. */
+.layout-break.variant-center { justify-content: center; text-align: center; }
+.variant-center .title { font-size: clamp(48px, 7vw, 132px); }
+
 /* ---------- Орбита ----------
    Слова цикла едут по эллипсу — сам цикл показан движением,
    а не стрелками. Позиции считает startOrbit в js/slides.js. */
-.layout-orbit { align-items: center; padding: var(--pad-top) var(--pad-x) var(--pad-bottom); }
-.layout-orbit.active { display: flex; }
-.orbit-wrap {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(20px, 5vh, 56px);
-}
-.layout-orbit .title { text-align: center; }
-
+/* Кольцо живёт в общей сетке слайда: сверху заголовок и правый абзац. */
+.layout-orbit .body { align-self: stretch; display: flex; align-items: center; }
 .orbit {
   position: relative;
-  width: min(88vw, 1240px);
-  height: clamp(260px, 56vh, 560px);
+  width: 100%;
+  height: clamp(240px, 46vh, 480px);
+  margin: 0 auto;
 }
 /* Линия орбиты — сплошная и тихая: она показывает путь, но не спорит
    со словами, которые по ней едут. */

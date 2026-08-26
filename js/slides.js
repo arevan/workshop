@@ -195,13 +195,9 @@
         return `<span class="orbit-word${accent ? ' accent' : ''}">` +
           `<i class="orbit-num">${pad2(i + 1)}</i>${MD.escapeHtml(text)}</span>`;
       }).join('');
-      // Заголовка на слайде нет намеренно: кольцо само себя объясняет,
-      // а title из frontmatter нужен для навигации и заметок спикера.
-      return `<div class="orbit-wrap">
-        <div class="orbit" aria-label="${MD.escapeHtml(words.join(' → '))}">
-          <svg class="orbit-path" aria-hidden="true"><ellipse class="orbit-line" /></svg>
-          ${items}
-        </div>
+      return `<div class="orbit" aria-label="${MD.escapeHtml(words.join(' → '))}">
+        <svg class="orbit-path" aria-hidden="true"><ellipse class="orbit-line" /></svg>
+        ${items}
       </div>`;
     },
 
@@ -228,7 +224,9 @@
     el.className = 'slide layout-' + layout;
     if (s.meta.variant) el.classList.add('variant-' + s.meta.variant);
 
-    if (layout === 'break' || layout === 'cover' || layout === 'orbit') {
+    // Перебивка и титул живут вне общей сетки слайда: у них нет
+    // ни правого абзаца, ни подвала. Орбита идёт по общему пути.
+    if (layout === 'break' || layout === 'cover') {
       el.innerHTML = LAYOUTS[layout](s.blocks, s.meta);
       return el;
     }
