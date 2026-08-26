@@ -422,9 +422,12 @@
 /* ---------- Появление строк ----------
    Каждый элемент слайда получает --i (порядковый номер) и выезжает
    с небольшой задержкой. Параметры — в tokens.css. */
+/* Элемент виден по умолчанию, анимация только проявляет его.
+   Ключевое — backwards вместо forwards: пока идёт задержка, действует
+   начальный кадр. Если анимация почему-то не стартует, текст просто
+   остаётся на месте, а не исчезает — контент важнее эффекта. */
 .reveal {
-  opacity: 0;
-  animation: reveal var(--reveal-dur) var(--ease-out) forwards;
+  animation: reveal var(--reveal-dur) var(--ease-out) backwards;
   animation-delay: calc(var(--i, 0) * var(--reveal-step) + 40ms);
 }
 @keyframes reveal {
@@ -438,7 +441,7 @@
 /* Заголовок слайда входит «набирая вес»: Manrope вариативный,
    вес анимируется от тонкого 200 к рабочему 300. */
 .slide .title.reveal {
-  animation: title-in 700ms var(--ease-out) forwards;
+  animation: title-in 700ms var(--ease-out) backwards;
   animation-delay: 40ms;
 }
 @keyframes title-in {
