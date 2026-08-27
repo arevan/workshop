@@ -8,7 +8,8 @@
  *
  * Разметка кейса разбирается тем же md.js, что и гайд. Договорённость одна:
  * «## Заголовок» начинает новый шаг, блок кода внутри шага — это промт,
- * и он рендерится панелью с кнопкой «Копировать».
+ * и он рендерится панелью с кнопкой «Копировать». Картинка — превью,
+ * открывается в лайтбоксе по клику (тот же паттерн, что в js/guide.js).
  */
 (async function () {
   const root = document.getElementById('practice');
@@ -39,6 +40,22 @@
         '</div>' +
         `<pre><code>${MD.escapeHtml(b.text)}</code></pre>` +
         '</div>';
+    }
+    // Картинка. Одиночный скрин с устройства («phone» в имени файла) — в рамку
+    // телефона, как на слайде «Немного демок». Узкое портретное превью
+    // («tall») — просто уже, без рамки: у него своё оформление из Figma.
+    // Составное превью из нескольких экранов — во всю ширину колонки.
+    if (b.type === 'img') {
+      const isPhone = /phone/.test(b.src);
+      const isTall = /tall/.test(b.src);
+      const cls = isPhone ? 'p-shot p-shot-phone' : isTall ? 'p-shot p-shot-tall' : 'p-shot';
+      const src = MD.escapeHtml(b.src);
+      return `<figure class="${cls}">` +
+        `<a href="${src}" target="_blank" rel="noopener">` +
+        `<img src="${src}" alt="${MD.escapeHtml(b.alt)}"` +
+        ` onerror="this.closest('figure').hidden = true"></a>` +
+        (b.alt ? `<figcaption>${MD.inline(b.alt)}</figcaption>` : '') +
+        '</figure>';
     }
     if (b.type === 'note') return `<blockquote><p>${MD.inline(b.text)}</p></blockquote>`;
     if (b.type === 'list') return '<ul>' + b.items.map((i) => `<li>${MD.inline(i)}</li>`).join('') + '</ul>';
@@ -119,6 +136,51 @@
   addEventListener('hashchange', () => {
     show();
     scrollTo({ top: 0 });
+  });
+
+  /*
+   * Лайтбокс: клик по превью показывает его во весь экран.
+   * Закрывается тремя способами — крестик, клик мимо картинки, Esc.
+   * Если JS не сработал, ссылка остаётся обычной: картинка просто откроется
+   * отдельной страницей.
+   */
+  const box = document.createElement('div');
+  box.className = 'lightbox';
+  box.innerHTML =
+    '<button class="lightbox-close" type="button" aria-label="Закрыть">×</button>' +
+    '<img alt=""><span class="lightbox-hint">Закрыть — Esc или клик мимо картинки</span>';
+  document.body.appendChild(box);
+  const bigImage = box.querySelector('img');
+
+  function openLightbox(src, alt) {
+    bigImage.src = src;
+    bigImage.alt = alt;
+    box.classList.add('open');
+    document.body.style.overflow = 'hidden'; // страница под оверлеем не скроллится
+    box.querySelector('.lightbox-close').focus();
+  }
+
+  function closeLightbox() {
+    box.classList.remove('open');
+    document.body.style.overflow = '';
+    bigImage.removeAttribute('src');
+  }
+
+  body.addEventListener('click', (e) => {
+    const link = e.target.closest('figure.p-shot a');
+    if (!link) return;
+    e.preventDefault();
+    openLightbox(link.getAttribute('href'), link.querySelector('img').alt);
+  });
+
+  // Клик по фону или крестику закрывает; по самой картинке — нет,
+  // чтобы её можно было рассматривать, не боясь промахнуться.
+  box.addEventListener('click', (e) => {
+    if (e.target !== bigImage) closeLightbox();
+  });
+
+  addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && box.classList.contains('open')) closeLightbox();
   });
 
   /*

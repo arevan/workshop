@@ -106,6 +106,7 @@
 .p-step > ul,
 .p-step > ol,
 .p-step > blockquote,
+.p-step .p-shot,
 .p-step .prompt { margin-left: 31px; }
 
 .p-step p {
@@ -202,6 +203,105 @@
 }
 .p-body a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
+/* ---------- Скриншоты в шагах ----------
+   Все — превью: уменьшены и кликабельны, полный размер открывается
+   в лайтбоксе (как в гайде). .p-shot — превью составных экранов из Figma
+   (несколько кадров и подпись «Шаг N» уже нарисованы внутри картинки).
+   .p-shot-phone — одиночный кадр с устройства: своя рамка «корпуса»,
+   как на слайде «Немного демок», а не просто скруглённый угол картинки —
+   так превью читается как телефон, а не как случайный скриншот.
+
+   Скругление крупнее, чем в гайде (24px вместо 14px), не для красоты:
+   Figma-экспорты кейса 2 уже несут своё скругление на тёмной подложке
+   кадра, и наше должно его перекрывать целиком — иначе на превью видно
+   сразу два скругления разного радиуса, чужое из-под своего. */
+.p-shot {
+  display: block;
+  margin: 0 0 clamp(28px, 4vh, 40px);
+  max-width: 340px;
+}
+.p-shot a { display: block; border: none; cursor: zoom-in; }
+.p-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 24px;
+  transition: opacity 0.15s;
+}
+.p-shot a:hover img { opacity: 0.85; }
+.p-shot figcaption {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.p-shot-phone { max-width: 240px; }
+.p-shot-phone a {
+  display: block;
+  padding: 1.5px;
+  border: 1.5px solid var(--text-dim);
+  border-radius: clamp(18px, 6vw, 30px);
+  background: #0a0a0a;
+  cursor: zoom-in;
+}
+.p-shot-phone img {
+  border-radius: clamp(16px, 5.5vw, 28px);
+}
+
+/* Портретное превью из Figma — уже своя рамка внутри картинки,
+   вторую поверх не рисуем, только ограничиваем ширину. Уже здесь,
+   чем горизонтальные: та же чужая подложка при большей высоте кадра
+   даёт больший отступ на глаз — сузили, чтобы 24px нашего скругления
+   гарантированно перекрывали его на любом из трёх экспортов. */
+.p-shot-tall { max-width: 260px; }
+
+/* ---------- Лайтбокс: превью во весь экран ----------
+   Тот же паттерн, что в гайде (js/guide.js) — открывается по клику
+   на любое превью, закрывается крестиком, кликом мимо или Esc. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 5vw, 56px);
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+}
+.lightbox-close {
+  position: absolute;
+  top: clamp(10px, 2.5vw, 24px);
+  right: clamp(12px, 3vw, 30px);
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font: 300 30px/1 var(--font-sans);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.lightbox-close:hover { color: var(--text); }
+.lightbox-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(10px, 2.2vw, 22px);
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
 @media (max-width: 640px) {
   /* Отступ под номер съедает половину узкого экрана — на телефоне
      шаг просто идёт в одну колонку. */
@@ -209,5 +309,10 @@
   .p-step > ul,
   .p-step > ol,
   .p-step > blockquote,
+  .p-step .p-shot,
   .p-step .prompt { margin-left: 0; }
+
+  /* На телефоне клавиши Esc нет, а тап мимо картинки очевиден —
+     подсказка только занимала бы место. */
+  .lightbox-hint { display: none; }
 }
