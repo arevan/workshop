@@ -256,6 +256,12 @@
     // ни правого абзаца, ни подвала. Орбита идёт по общему пути.
     if (layout === 'break' || layout === 'cover') {
       el.innerHTML = LAYOUTS[layout](s.blocks, s.meta);
+      // Ссылки с перебивок открываем в новой вкладке: показ не должен
+      // уезжать со слайда, когда открыли раздел сайта.
+      el.querySelectorAll('a[href]').forEach((a) => {
+        a.target = '_blank';
+        a.rel = 'noopener';
+      });
       return el;
     }
 
@@ -433,6 +439,8 @@
   const bar = document.getElementById('bar');
   const notes = document.getElementById('notes');
   const hint = document.getElementById('hint');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
   let cur = -1;
   let notesOpen = false;
 
@@ -456,8 +464,15 @@
     document.title = pad2(cur + 1) + ' · ' + (slides[cur].meta.title || 'Слайд');
     // адрес вида /slides/#7 — можно дать прямую ссылку на слайд
     if (updateHash) history.replaceState(null, '', '#' + (cur + 1));
+    // На краях колоды стрелка гаснет: листать в эту сторону больше нечего.
+    prevBtn.disabled = cur === 0;
+    nextBtn.disabled = cur === els.length - 1;
     if (notesOpen) renderNotes();
   }
+
+  // Стрелки на экране — та же навигация, что ← и → на клавиатуре.
+  prevBtn.addEventListener('click', () => go(cur - 1));
+  nextBtn.addEventListener('click', () => go(cur + 1));
 
   // Клавиатура. e.code вместо e.key — работает и в русской раскладке.
   addEventListener('keydown', (e) => {

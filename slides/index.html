@@ -22,6 +22,17 @@
        Ссылка назад показывается только когда двигают мышью — чтобы
        не мозолить глаза на проекторе. -->
   <a class="slides-home" href="../index.html">← Воркшоп</a>
+
+  <!-- Стрелки листания: то же, что ← и → на клавиатуре, но мышью.
+       Ведут себя как ссылка возврата — уходят вместе с курсором. -->
+  <nav class="nav" aria-label="Навигация по слайдам">
+    <button id="prev" class="nav-btn" type="button" aria-label="Предыдущий слайд">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+    </button>
+    <button id="next" class="nav-btn" type="button" aria-label="Следующий слайд">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </nav>
   <div class="progress"><b id="bar"></b></div>
   <div id="counter" class="counter"></div>
   <div id="hint" class="hint">→ или пробел — дальше&ensp;·&ensp;F — во весь экран&ensp;·&ensp;N — заметки</div>

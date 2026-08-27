@@ -192,6 +192,23 @@
 .layout-break.variant-center { justify-content: center; text-align: center; }
 .variant-center .title { font-size: clamp(48px, 7vw, 132px); }
 
+/* Ссылка на перебивке: не текст, а действие — «открой у себя». Стрелка
+   уезжает вправо на наведении, как в навигации на главной. */
+.layout-break .line a {
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--hair);
+  padding-bottom: 4px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.layout-break .line a::after {
+  content: '→';
+  margin-left: 0.6ch;
+  display: inline-block;
+  transition: transform 0.2s var(--ease-out);
+}
+.layout-break .line a:hover { color: var(--accent); border-color: var(--accent); }
+.layout-break .line a:hover::after { transform: translateX(0.4ch); }
+
 /* ---------- Ряд телефонов с демками ----------
    Мокап собран типографикой и рамкой, без картинок: тонкий корпус,
    скруглённый экран, вырез сверху. Внутри — запись экрана. */
@@ -505,6 +522,48 @@
   .slides-page.idle .slides-home { opacity: 1; pointer-events: auto; }
 }
 
+/* ---------- Стрелки листания ----------
+   Сидят в боковых полях слайда (--pad-x), поэтому не наезжают на текст.
+   Живут по тем же правилам, что и ссылка возврата: тают вместе с курсором,
+   на краях колоды гаснут — видно, что дальше листать некуда. */
+.nav-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--hair);
+  border-radius: 50%;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: opacity 0.25s, color 0.15s, border-color 0.15s;
+}
+.nav-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#prev { left: calc(var(--pad-x) / 2 - 22px); }
+#next { right: calc(var(--pad-x) / 2 - 22px); }
+.nav-btn:hover { color: var(--accent); border-color: var(--accent); }
+.nav-btn:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+.slides-page.idle .nav-btn { opacity: 0; pointer-events: none; }
+
+/* На тач-устройствах стрелки видны всегда — но не те, что упёрлись в край
+   колоды: :not(:disabled) не даёт этому правилу перебить приглушение. */
+@media (hover: none) {
+  .slides-page.idle .nav-btn:not(:disabled) { opacity: 1; pointer-events: auto; }
+}
+
 /* ---------- Мобильный фолбэк: «не разваливается» ---------- */
 @media (max-width: 700px) {
   .slide {
@@ -524,4 +583,9 @@
   .col.with-header + .col.with-header { margin-top: 28px; }
   .pairs { grid-template-columns: 1fr; row-gap: 6px; }
   .pair .desc { margin-bottom: 18px; }
+  /* Узкие поля: по бокам стрелкам места нет — уводим их вниз, к счётчику */
+  .nav-btn { top: auto; bottom: 2.4vh; transform: none; }
+  #prev { left: 24px; }
+  #next { left: 78px; right: auto; }
+  .hint { display: none; }
 }
