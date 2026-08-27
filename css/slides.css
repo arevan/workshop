@@ -352,16 +352,28 @@
 @keyframes caret-blink { 50% { opacity: 0; } }
 .cover-line.typing .cover-caret { display: inline-block; }
 
-/* QR-код на финальном слайде */
-.break-qr { margin: clamp(28px, 8vh, 72px) 0 0; }
+/* QR-коды на финальном слайде. Их несколько, поэтому ряд, а не одиночная
+   картинка: подпись под каждым сразу говорит, куда он ведёт. Размер кода
+   зависит от их числа (--count проставляет js/slides.js) — три кода мельче
+   одного, но всё ещё считываются с телефона из зала. */
+.break-qrs {
+  display: flex;
+  flex-wrap: wrap;
+  /* Промежуток заметно больше самих полей кода: камера телефона наводится
+     на один код, а не мечется между соседними. */
+  gap: clamp(32px, 5.5vw, 96px);
+  margin: clamp(28px, 6vh, 56px) 0 0;
+}
+.break-qr { margin: 0; max-width: clamp(130px, 15vw, 230px); }
 .break-qr img {
   display: block;
-  width: clamp(120px, 13vw, 200px);
-  border-radius: 12px;
+  width: clamp(130px, 15vw, 230px);
+  border-radius: 10px;
 }
 .break-qr figcaption {
   margin-top: 12px;
-  font-size: clamp(12px, 1.2vw, 17px);
+  font-size: clamp(12px, 1.15vw, 17px);
+  line-height: 1.35;
   color: var(--text-dim);
 }
 

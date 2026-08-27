@@ -172,12 +172,18 @@
             b.items.map((it) => `<p class="reveal" ${rstyle()}>${MD.inline(it)}</p>`).join('') + '</div>';
         }
       }
-      // Необязательный QR-код (frontmatter: qr + qrlabel) — для финального слайда.
-      if (meta.qr) {
-        html += `<figure class="break-qr reveal" style="--i:${revealIndex++}">` +
-          `<img src="${MD.escapeHtml(meta.qr)}" alt="QR-код" onerror="this.closest('figure').hidden = true">` +
-          (meta.qrlabel ? `<figcaption>${MD.inline(meta.qrlabel)}</figcaption>` : '') +
-          '</figure>';
+      // QR-коды: строки вида «![Подпись](../assets/qr-x.png)» в теле слайда.
+      // Их может быть несколько — встают рядом, подпись под каждым говорит,
+      // куда ведёт. Старый вариант через frontmatter (qr + qrlabel) тоже
+      // работает: это тот же ряд, просто из одного кода.
+      const codes = blocks.filter((b) => b.type === 'img');
+      if (meta.qr) codes.push({ src: meta.qr, alt: meta.qrlabel || '' });
+      if (codes.length) {
+        html += `<div class="break-qrs">` + codes.map((b) =>
+          `<figure class="break-qr reveal" style="--i:${revealIndex++}">` +
+          `<img src="${MD.escapeHtml(b.src)}" alt="QR-код" onerror="this.closest('figure').hidden = true">` +
+          (b.alt ? `<figcaption>${MD.inline(b.alt)}</figcaption>` : '') +
+          '</figure>').join('') + '</div>';
       }
       return html + '</div>';
     },
