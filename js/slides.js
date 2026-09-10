@@ -10,11 +10,15 @@
 
   /* ================= 1. Загрузка ================= */
 
+  // Какую колоду показывать, говорит страница: <body data-deck="hackathon">.
+  // Без атрибута это основная презентация — /content/slides.
+  const deckDir = '../content/' + (document.body.dataset.deck || 'slides') + '/';
+
   let slides;
   try {
-    const deck = await CONTENT.loadJSON('../content/slides/manifest.json');
+    const deck = await CONTENT.loadJSON(deckDir + 'manifest.json');
     const files = await Promise.all(
-      deck.slides.map((f) => CONTENT.loadText('../content/slides/' + f))
+      deck.slides.map((f) => CONTENT.loadText(deckDir + f))
     );
     slides = files
       .map((text) => {
@@ -74,7 +78,7 @@
       let text = raw;
       const custom = raw.match(/^\[(.+?)\]\s+(.*)$/);
       if (custom) { mark = custom[1]; text = custom[2]; }
-      const markClass = marker === '✓' ? 'check' : 'num';
+      const markClass = mark === '✓' ? 'check' : 'num';
       html += `<div class="item reveal" ${rstyle()}>` +
         `<span class="${markClass}">${MD.escapeHtml(mark)}</span>` +
         `<span class="txt">${MD.inline(text)}</span></div>`;
@@ -98,6 +102,22 @@
         `<span class="desc reveal">${MD.inline(desc)}</span></div>`;
     }
     return html + '</div>';
+  }
+
+  // Телефон с записью экрана. Пока файла нет, корпус остаётся пустым —
+  // слайд от этого не ломается. Используют два layout: mockups и brief.
+  function renderPhone(b) {
+    const src = MD.escapeHtml(b.src);
+    const isVideo = /\.(mp4|webm|mov)$/i.test(b.src);
+    const media = isVideo
+      ? `<video src="${src}" muted loop autoplay playsinline
+           onerror="this.closest('.phone').classList.add('empty')"></video>`
+      : `<img src="${src}" alt=""
+           onerror="this.closest('.phone').classList.add('empty')">`;
+    return `<figure class="phone reveal" style="--i:${revealIndex++}">
+      <div class="phone-frame">${media}</div>
+      ${b.alt ? `<figcaption>${MD.inline(b.alt)}</figcaption>` : ''}
+    </figure>`;
   }
 
   const LAYOUTS = {
@@ -188,26 +208,83 @@
       return html + '</div>';
     },
 
+    // Бенто: стенд из ячеек на тонких линиях, без заливок. Каждая
+    // «## Заголовок» — ячейка; тег в скобках перед заголовком задаёт её
+    // размер: [wide] две колонки, [full] три, [stat] крупная цифра.
+    // Картинка или видео становится телефоном в правой колонке на всю
+    // высоту. Заголовок слайда и subtitle живут в первой ячейке.
+    bento(blocks, meta) {
+      const cells = [];
+      let cur = null;
+      for (const b of blocks) {
+        if (b.type === 'h2') {
+          const m = b.text.match(/^\[(\w+)\]\s+(.*)$/);
+          cur = { tag: m ? m[1] : 'one', title: m ? m[2] : b.text, blocks: [] };
+          cells.push(cur);
+        } else if (b.type === 'img') {
+          cells.push({ tag: 'phone', title: b.alt, blocks: [b] });
+        } else if (cur) cur.blocks.push(b);
+      }
+
+      let html = `<div class="bento">` +
+        `<div class="cell cell-title reveal" ${rstyle()}>` +
+        `<h1 class="title">${MD.inline(meta.title || '')}</h1>` +
+        (meta.subtitle ? `<p class="cell-sub">${MD.inline(meta.subtitle)}</p>` : '') +
+        '</div>';
+
+      for (const c of cells) {
+        html += `<div class="cell cell-${c.tag} reveal" ${rstyle()}>`;
+        if (c.title) html += `<h3 class="cell-label">${MD.inline(c.title)}</h3>`;
+        for (const b of c.blocks) {
+          if (b.type === 'img') html += renderPhone(b);
+          else if (b.type === 'list') html += renderListBody([b]);
+          else if (b.type === 'p') {
+            html += c.tag === 'stat'
+              ? `<p class="stat">${MD.inline(b.text)}</p>`
+              : `<p class="cell-text">${MD.inline(b.text)}</p>`;
+          }
+        }
+        html += '</div>';
+      }
+      return html + '</div>';
+    },
+
     // Ряд телефонов с записями демок. Каждый кейс — строка вида
     // «![Название — время](../assets/demos/file.mp4)». Пока файла нет,
     // экран остаётся пустым, слайд не ломается.
     mockups(blocks) {
       const items = blocks.filter((b) => b.type === 'img');
-      const phones = items.map((b, i) => {
-        const src = MD.escapeHtml(b.src);
-        const isVideo = /\.(mp4|webm|mov)$/i.test(b.src);
-        const media = isVideo
-          ? `<video src="${src}" muted loop autoplay playsinline
-               onerror="this.closest('.phone').classList.add('empty')"></video>`
-          : `<img src="${src}" alt=""
-               onerror="this.closest('.phone').classList.add('empty')">`;
-        return `<figure class="phone reveal" style="--i:${revealIndex++}">
-          <div class="phone-frame">${media}</div>
-          ${b.alt ? `<figcaption>${MD.inline(b.alt)}</figcaption>` : ''}
-        </figure>`;
-      }).join('');
+      const phones = items.map(renderPhone).join('');
       // Число телефонов уходит в CSS: от него зависит их размер.
       return `<div class="phones" style="--count:${items.length || 1}">${phones}</div>`;
+    },
+
+    // Бриф: слева ссылки по кейсу и шпаргалка, справа телефон с записью
+    // текущего сценария. Слайд висит на экране весь день, поэтому всё нужное
+    // умещается в один экран и никуда не листается.
+    //
+    // Порядок в файле: список ссылок, потом «## Заголовок» и второй список —
+    // он становится чек-листом под тихим заголовком.
+    brief(blocks) {
+      const media = blocks.filter((b) => b.type === 'img');
+      const rest = blocks.filter((b) => b.type !== 'img');
+      const cut = rest.findIndex((b) => b.type === 'h2');
+      const head = cut === -1 ? rest : rest.slice(0, cut);
+      const tail = cut === -1 ? [] : rest.slice(cut);
+
+      let text = renderListBody(head);
+      if (tail.length) {
+        const items = tail.flatMap((b) => (b.type === 'list' ? b.items : []));
+        text += `<div class="brief-aside">` +
+          `<h3 class="reveal" ${rstyle()}>${MD.inline(tail[0].text)}</h3>` +
+          renderListBody([{ type: 'list', items }], '✓') + '</div>';
+        // Абзацы после шпаргалки — тезис или примечание на всю колонку
+        text += tail.filter((b) => b.type === 'p').map(renderAfter).join('');
+      }
+      return `<div class="brief">` +
+        `<div class="brief-text">${text}</div>` +
+        `<div class="brief-media">${media.map(renderPhone).join('')}</div>` +
+        '</div>';
     },
 
     // Орбита: слова цикла едут по наклонённому эллипсу. Порядок и текст
@@ -252,9 +329,9 @@
     el.className = 'slide layout-' + layout;
     if (s.meta.variant) el.classList.add('variant-' + s.meta.variant);
 
-    // Перебивка и титул живут вне общей сетки слайда: у них нет
+    // Перебивка, титул и бенто живут вне общей сетки слайда: у них нет
     // ни правого абзаца, ни подвала. Орбита идёт по общему пути.
-    if (layout === 'break' || layout === 'cover') {
+    if (layout === 'break' || layout === 'cover' || layout === 'bento') {
       el.innerHTML = LAYOUTS[layout](s.blocks, s.meta);
       // Ссылки с перебивок открываем в новой вкладке: показ не должен
       // уезжать со слайда, когда открыли раздел сайта.
@@ -285,6 +362,10 @@
     stage.appendChild(el);
     return el;
   });
+
+  // Колода из одного слайда — это не показ, а стенд: он висит на экране
+  // весь день. Счётчик, прогресс, стрелки и подсказка в нём только шумят.
+  if (els.length === 1) document.body.classList.add('single');
 
   /* ---------- Перезапуск появления ----------
      Слайды лежат в DOM скрытыми (display:none), и браузер не всегда

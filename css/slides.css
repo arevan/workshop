@@ -285,6 +285,153 @@
   .phone-frame { height: clamp(150px, 26vh, 240px); }
 }
 
+/* ---------- Бриф ----------
+   Слева задача и ссылки, справа один телефон с записью текущего сценария.
+   Телефону здесь задаём высоту напрямую: расчёт из ряда демок опирается
+   на --count, которого в брифе нет. */
+.brief {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(24px, 4.5vw, 90px);
+  width: 100%;
+}
+.brief-text { min-width: 0; }
+/* В брифе строка-подводка стоит вплотную к ссылкам: воздух презентации
+   здесь съел бы телефон и вторую половину списка. */
+.brief .line { margin-bottom: clamp(18px, 5vh, 48px); }
+.brief .items { row-gap: clamp(10px, 2.6vh, 26px); }
+.brief .thesis { margin-top: clamp(12px, 3.4vh, 34px); }
+
+/* Шпаргалка из гайда: тихий заголовок и пары, плотнее основного списка —
+   её читают глазами по ходу дня, а не с последнего ряда. */
+.brief-aside { margin-top: clamp(16px, 4.2vh, 42px); }
+.brief-aside h3 {
+  margin: 0 0 clamp(10px, 2.4vh, 22px);
+  font-size: clamp(12px, 1.25vw, 22px);
+  font-weight: var(--w-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.brief-aside .items { row-gap: clamp(8px, 2vh, 20px); }
+.brief-aside .item { grid-template-columns: clamp(22px, 2.6vw, 44px) 1fr; }
+.brief-aside .txt { font-size: clamp(13px, 1.5vw, 27px); }
+.brief-aside .check { font-size: clamp(11px, 1.2vw, 22px); }
+
+/* Стенд из одного слайда: листать нечего, обвязка спрятана */
+.single .counter,
+.single .hint,
+.single .progress,
+.single .nav-btn { display: none; }
+.brief .phone-frame { height: clamp(200px, 52vh, 460px); }
+.brief .phone figcaption { max-width: 18ch; }
+
+/* ---------- Бенто ----------
+   Стенд из ячеек: тонкие линии вместо заливок и теней, чтобы остаться
+   в системе — на чёрном это читается как сетка, а не как набор плашек.
+   Три колонки контента и четвёртая под телефон на всю высоту. */
+.layout-bento { padding: 6vh var(--pad-x) 6vh; }
+.layout-bento.active { display: flex; align-items: center; justify-content: center; }
+/* Сетка не растягивается за экраном: ширина привязана к высоте (≈16:9),
+   поэтому на широком мониторе она стоит по центру с полями, а на проекторе
+   занимает всё. Ряды по контенту, лишняя высота уходит в поля, а не в ячейки. */
+.bento {
+  /* На заливке #1C1C1E тусклый серый теряет контраст, поэтому внутри
+     сетки роль --text-dim играет --text-muted: лейблы, номера, примечание,
+     подчёркивания ссылок и рамка телефона подхватывают его сами. */
+  --text-dim: var(--text-muted);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: auto auto auto;
+  gap: clamp(8px, 1.1vw, 16px);
+  width: 100%;
+  max-width: 172vh;
+  max-height: 100%;
+}
+.cell {
+  min-width: 0;
+  padding: clamp(14px, 1.7vw, 28px);
+  background: #1C1C1E;
+  border: 1px solid var(--hair);
+  border-radius: clamp(18px, 2.1vw, 33px);
+}
+.cell-title { grid-column: span 2; }
+.cell-wide { grid-column: span 2; }
+.cell-full { grid-column: 1 / span 3; }
+.cell-phone {
+  grid-column: 4;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* Телефон считается от ширины своей колонки, а не от экрана: так он всегда
+   одного масштаба с сеткой и заполняет ячейку по высоте на любом мониторе. */
+.cell-phone .phone { flex: 1; min-height: 0; width: 100%; justify-content: center; }
+.cell-phone .phone-frame { width: 100%; height: auto; border-radius: clamp(24px, 3.3vw, 51px); }
+.cell-phone .phone figcaption { display: none; } /* подпись уже в лейбле ячейки */
+
+.cell-title .title { margin: 0; font-size: clamp(28px, 3.4vw, 60px); }
+.cell-sub {
+  margin: clamp(8px, 1.6vh, 16px) 0 0;
+  font-size: clamp(12px, 1.2vw, 20px);
+  color: var(--text-muted);
+}
+.cell-label {
+  margin: 0 0 clamp(10px, 2vh, 20px);
+  font-size: clamp(11px, 1.1vw, 18px);
+  font-weight: var(--w-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+/* Крупная цифра — дедлайн: то, на что смотрят чаще всего */
+.stat {
+  margin: 0;
+  font-size: clamp(40px, 5.2vw, 96px);
+  font-weight: var(--w-display);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.cell-text {
+  margin: clamp(10px, 2.2vh, 22px) 0 0;
+  font-size: clamp(12px, 1.2vw, 20px);
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+/* Списки в ячейках плотнее слайдовых: их читают вблизи, по ходу дня */
+.bento .items { row-gap: clamp(7px, 1.5vh, 14px); }
+.bento .item { grid-template-columns: clamp(24px, 2.6vw, 44px) 1fr; }
+.bento .txt { font-size: clamp(13px, 1.35vw, 24px); }
+.bento .num { font-size: clamp(10px, 1vw, 16px); }
+.bento .check { font-size: clamp(11px, 1.15vw, 20px); }
+/* Шесть критериев жюри — в две колонки, иначе ячейка вытягивается */
+.cell-wide .items { grid-template-columns: 1fr 1fr; column-gap: clamp(12px, 1.6vw, 28px); }
+
+/* ---------- Ссылки внутри слайда ----------
+   Тонкое подчёркивание вместо цвета: жёлтый на слайде занят акцентом,
+   а без подчёркивания ссылку не отличить от обычной строки. */
+.body a {
+  border-bottom: 1px solid var(--hair);
+  padding-bottom: 2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.body a:hover { color: var(--accent); border-color: var(--accent); }
+/* В бенто ссылки должны читаться ссылками сразу: подчёркивание заметнее
+   hairline, с отступом, чтобы не резало нижние выносы */
+.bento a {
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-color: var(--text-dim);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+.bento a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+
 /* ---------- Орбита ----------
    Слова цикла едут по эллипсу — сам цикл показан движением,
    а не стрелками. Позиции считает startOrbit в js/slides.js. */
@@ -565,6 +712,16 @@
 }
 
 /* ---------- Мобильный фолбэк: «не разваливается» ---------- */
+/* Узкое окно или планшет: четыре колонки не влезают, складываем в две,
+   телефон уходит вниз. Ниже 700px всё схлопывается в одну — см. дальше. */
+@media (max-width: 1000px) {
+  .layout-bento.active { align-items: flex-start; overflow-y: auto; }
+  .bento { grid-template-columns: 1fr 1fr; grid-template-rows: none; max-width: none; }
+  .cell-title, .cell-wide, .cell-full, .cell-phone { grid-column: 1 / -1; grid-row: auto; }
+  .cell-phone .phone { width: auto; }
+  .cell-phone .phone-frame { width: auto; height: clamp(200px, 40vh, 360px); }
+}
+
 @media (max-width: 700px) {
   .slide {
     grid-template-columns: 1fr;
@@ -581,6 +738,11 @@
   .cols { grid-template-columns: 1fr; }
   .col:not(.with-header) p { margin-bottom: 20px; }
   .col.with-header + .col.with-header { margin-top: 28px; }
+  .brief { grid-template-columns: 1fr; row-gap: 28px; }
+  .layout-bento { padding: 7vh 24px 9vh; }
+  .bento { grid-template-columns: 1fr; grid-template-rows: none; height: auto; }
+  .cell-title, .cell-wide, .cell-full, .cell-phone { grid-column: auto; grid-row: auto; }
+  .cell-wide .items { grid-template-columns: 1fr; }
   .pairs { grid-template-columns: 1fr; row-gap: 6px; }
   .pair .desc { margin-bottom: 18px; }
   /* Узкие поля: по бокам стрелкам места нет — уводим их вниз, к счётчику */

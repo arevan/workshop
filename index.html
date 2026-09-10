@@ -27,9 +27,12 @@
       <a class="reveal" style="--i:3" href="slides/index.html"><span class="num">01</span><span class="t">Слайды</span><span class="arr">→</span></a>
       <a class="reveal" style="--i:4" href="guide/index.html"><span class="num">02</span><span class="t">Гайд</span><span class="arr">→</span></a>
       <a class="reveal" style="--i:5" href="practice/index.html"><span class="num">03</span><span class="t">Практика</span><span class="arr">→</span></a>
+      <!-- Четвёртая дверь появляется только там, где раздел выложен:
+           скрипт внизу проверяет, отвечает ли hackathon/, и снимает hidden. -->
+      <a class="reveal" style="--i:6" href="hackathon/index.html" id="hub-hackathon" hidden><span class="num">04</span><span class="t">Хакатон</span><span class="arr">→</span></a>
     </nav>
 
-    <section class="hub-note reveal" style="--i:6">
+    <section class="hub-note reveal" style="--i:7">
       <p>Этот сайт — тоже демка: он собран вайбкодингом. Открой папку проекта
       в своём AI-агенте и попроси что-нибудь поменять — например:
       <code>«поменяй жёлтый акцент на другой цвет»</code>.</p>
@@ -37,5 +40,13 @@
   </main>
 
   <!-- <script src="js/dots.js"></script> -->
+  <script>
+    // Раздел хакатона выкладывается отдельно и позже остального сайта.
+    // Пока его нет на сервере, ссылка на него не показывается вовсе —
+    // лучше три двери, чем четвёртая в никуда.
+    fetch('hackathon/index.html', { method: 'HEAD' })
+      .then((r) => { if (r.ok) document.getElementById('hub-hackathon').hidden = false; })
+      .catch(() => {});
+  </script>
 </body>
 </html>
