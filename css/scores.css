@@ -1,0 +1,463 @@
+/*
+  Оценки: судейские листы и итоги хакатона.
+  Та же колонка и те же приёмы, что в практике: тусклая ссылка назад,
+  крупный заголовок, переключатель по хешу, номера — только там, где
+  важен порядок (порядок показа команд, номера критериев).
+  Жёлтый — один на экран: цифра первого места в итогах.
+*/
+
+.scores-page { background: var(--bg); }
+
+#scores {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: clamp(28px, 6vw, 64px) clamp(20px, 5vw, 40px) 0;
+}
+
+.s-back {
+  display: inline-block;
+  margin-bottom: 5vh;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  transition: color 0.15s;
+}
+.s-back:hover { color: var(--accent); }
+
+.s-head h1 {
+  margin: 0 0 18px;
+  font-size: clamp(36px, 8vw, 64px);
+  font-weight: var(--w-display);
+  letter-spacing: -0.015em;
+}
+.s-sub {
+  margin: 0 0 clamp(36px, 6vh, 56px);
+  max-width: 58ch;
+  color: var(--text-muted);
+  font-size: 16.5px;
+  line-height: 1.6;
+}
+
+.s-kicker {
+  margin: 0 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.s-text {
+  margin: 0 0 20px;
+  max-width: 62ch;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.s-h2 {
+  margin: 0 0 12px;
+  font-size: clamp(24px, 3.4vw, 32px);
+  font-weight: var(--w-display);
+  letter-spacing: -0.015em;
+}
+
+/* ---------- Переключатель: судьи и итоги ---------- */
+.s-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px clamp(20px, 3vw, 36px);
+  margin-bottom: clamp(40px, 7vh, 72px);
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--hair);
+}
+.s-switch a {
+  font-size: 17px;
+  color: var(--text-dim);
+  transition: color 0.15s;
+}
+.s-switch a:hover { color: var(--text-soft); }
+.s-switch a.is-current { color: var(--text); }
+/* Итоги отодвинуты вправо: это не ещё один судья, а другой экран */
+.s-switch-results { margin-left: auto; }
+
+/* ---------- Двери: выбор листа ---------- */
+.s-doors a {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 1.4vh 0;
+  font-size: clamp(28px, 4vw, 56px);
+  font-weight: 300;
+  transition: color 0.18s;
+}
+.s-doors .st {
+  font-size: 14px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.s-doors .arr { margin-left: auto; transition: transform 0.3s var(--ease-out), color 0.18s; }
+.s-doors a:hover { color: var(--accent); }
+.s-doors a:hover .arr { transform: translateX(0.5ch); color: var(--accent); }
+.s-doors-results {
+  margin-top: 3vh;
+  border-top: 1px solid var(--hair);
+  padding-top: 3vh !important;
+}
+
+/* ---------- Лист судьи ---------- */
+.s-intro { margin-bottom: 32px; }
+.s-judge {
+  margin: 0 0 14px;
+  font-size: clamp(30px, 5vw, 48px);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+}
+.s-lead {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--text-soft);
+  font-size: 16.5px;
+  line-height: 1.6;
+}
+
+/* Шкала: пять колонок, цифра над словом */
+.s-scale {
+  list-style: none;
+  margin: 0 0 clamp(24px, 4vh, 40px);
+  padding: 18px 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  border-top: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
+}
+.s-scale li { display: grid; gap: 4px; align-content: start; }
+.s-scale .n { font-size: 26px; font-weight: 300; font-variant-numeric: tabular-nums; }
+.s-scale .w { font-size: 13px; line-height: 1.35; color: var(--text-muted); }
+
+.s-team {
+  padding-block: clamp(32px, 5vh, 48px);
+  border-bottom: 1px solid var(--hair);
+}
+.s-team-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.s-team-head .num {
+  flex: none;
+  width: 22px;
+  font-size: 13px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.s-team-head h3 {
+  margin: 0;
+  font-size: clamp(22px, 3.2vw, 29px);
+  font-weight: var(--w-display);
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+.s-team-sum {
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.s-team-sum.is-done { color: var(--text-soft); }
+
+/* Критерии выровнены по названию команды, номер висит слева */
+.s-crits { margin-left: 38px; }
+
+.s-crit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--hair);
+}
+.s-crit:last-child { border-bottom: 0; }
+.s-crit-text { display: grid; gap: 2px; min-width: 0; }
+.s-crit-text .name { font-size: 17px; color: var(--text); }
+.s-crit-text .hint { font-size: 13.5px; line-height: 1.4; color: var(--text-muted); }
+
+/* Оценка 1–5: настоящие радиокнопки, спрятанные под квадраты-подписи.
+   Так работают Tab, стрелки и скринридер — без единой строчки JS. */
+.s-radios { display: flex; gap: 6px; flex: none; }
+.s-radios input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.s-radios label {
+  width: 42px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--progress);
+  border-radius: 8px;
+  color: var(--text-soft);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.s-radios label:hover { border-color: var(--text-muted); color: var(--text); }
+.s-radios input:checked + label {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+.s-radios input:focus-visible + label { outline: 1px solid var(--text-muted); outline-offset: 3px; }
+
+/* ---------- Личные итоги судьи: появляются после сдачи ---------- */
+.s-mine { margin-top: clamp(40px, 6vh, 64px); }
+.s-mine-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--hair); }
+.s-mine-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--hair);
+}
+.s-mine-list .place {
+  flex: none;
+  width: 22px;
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.s-mine-list .team { font-size: 18px; }
+.s-mine-list .score { margin-left: auto; font-size: 18px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.s-mine-list .of { font-size: 13px; color: var(--text-dim); }
+
+/* ---------- Нижняя панель: прогресс и сдача ---------- */
+.s-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 24px;
+  padding-block: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  background: var(--bg);
+  border-top: 1px solid var(--hair);
+}
+.s-dock-text { display: grid; gap: 2px; min-width: 0; flex: 1 1 320px; }
+.s-progress { font-size: 16px; color: var(--text); }
+.s-missing { font-size: 13.5px; line-height: 1.45; color: var(--text-muted); }
+
+.s-error { font-size: 13.5px; line-height: 1.45; color: var(--warn); }
+.s-error:empty { display: none; }
+
+.s-dock-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+
+/* Код судьи: моноширинный, чтобы 0 и O, 1 и I не путались */
+.s-code { display: grid; gap: 6px; }
+.s-code span { font-size: 12px; color: var(--text-dim); }
+.s-code input {
+  width: 160px;
+  height: 46px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  color: var(--text);
+  font: 500 15px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.s-code input::placeholder { color: var(--text-dim); }
+.s-code input:focus { outline: none; border-color: var(--text-muted); }
+
+.s-btn {
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  height: 46px;
+  padding: 0 24px;
+  background: var(--text);
+  color: var(--bg);
+  font: 600 15px var(--font-sans);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.s-btn:hover:not(:disabled) { background: var(--accent); }
+.s-btn:disabled { background: var(--hair); color: var(--text-dim); cursor: default; }
+
+/* ---------- Итоги ---------- */
+.s-block { margin-bottom: clamp(56px, 9vh, 96px); }
+
+.s-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 20px;
+  margin: calc(-1 * clamp(20px, 3.5vh, 40px)) 0 clamp(32px, 5vh, 48px);
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+
+.s-link-text {
+  color: var(--text);
+  border-bottom: 1px solid var(--text-dim);
+  transition: color 0.15s, border-color 0.15s;
+}
+.s-link-text:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.s-who { display: grid; gap: 28px; max-width: 560px; }
+.s-who-names { margin: 0; padding: 0; border: 0; }
+.s-who-names label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--hair);
+  font-size: 20px;
+  font-weight: 300;
+  cursor: pointer;
+}
+.s-who-names input { width: 18px; height: 18px; margin: 0; accent-color: var(--text); }
+.s-who-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+
+/* Пьедестал: крупно, как двери хаба. Жёлтая только цифра первого места. */
+.s-podium { list-style: none; margin: 0 0 24px; padding: 0; }
+.s-podium li {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(16px, 2.4vw, 32px);
+  padding-block: 1.6vh;
+  border-bottom: 1px solid var(--hair);
+}
+.s-podium .place {
+  flex: none;
+  width: 1.2ch;
+  font-size: clamp(34px, 5vw, 64px);
+  font-weight: 300;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.s-podium .is-first .place { color: var(--accent); }
+.s-podium .team {
+  font-size: clamp(26px, 3.8vw, 48px);
+  font-weight: 300;
+  line-height: 1.15;
+}
+.s-podium .tie {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--warn);
+}
+.s-podium .score {
+  margin-left: auto;
+  font-size: clamp(22px, 3vw, 36px);
+  font-weight: 300;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.s-podium .of { font-size: 14px; color: var(--text-dim); }
+
+.s-jurors { border-top: 1px solid var(--hair); }
+.s-juror {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 24px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--hair);
+}
+.s-juror .name { font-size: 17px; }
+.s-juror .st { font-size: 14px; color: var(--text-dim); }
+.s-juror .st.is-in { color: var(--ok); }
+
+/* Таблица шире телефона — прокручивается сама, страница стоит на месте */
+.s-table-wrap { overflow-x: auto; border-top: 1px solid var(--hair); }
+.s-table { width: 100%; min-width: 880px; border-collapse: collapse; }
+.s-table th, .s-table td {
+  padding: 14px 10px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--hair);
+}
+.s-table th {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.s-table th .i { margin-right: 6px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.s-table td { font-variant-numeric: tabular-nums; }
+.s-table .place { width: 52px; font-size: 24px; font-weight: 300; color: var(--text-muted); }
+.s-table .team { min-width: 180px; font-size: 16.5px; }
+.s-table .meta { display: block; margin-top: 3px; font-size: 13px; color: var(--text-dim); }
+.s-table .crit { width: 84px; }
+.s-table .avg { display: block; font-size: 18px; }
+.s-table .avg.is-split { color: var(--warn); }
+.s-table .total { width: 120px; }
+.s-table .big { display: block; font-size: 24px; font-weight: 300; }
+.s-table .total .of { display: block; font-size: 12.5px; line-height: 1.35; color: var(--text-dim); }
+
+/* Мини-гистограмма: пять столбиков — сколько судей поставили 1…5 */
+.s-hist { display: flex; align-items: flex-end; gap: 3px; height: 16px; margin-top: 6px; }
+.s-hist i { display: block; width: 7px; border-radius: 1px; background: var(--text-muted); }
+.s-hist i.zero { height: 1px; background: var(--progress); }
+
+.s-disputes { border-top: 1px solid var(--hair); }
+.s-dispute {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 2fr auto;
+  align-items: baseline;
+  gap: 4px 24px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--hair);
+}
+.s-dispute .what { font-size: 16px; }
+.s-dispute .what span { display: block; font-size: 14px; color: var(--text-muted); }
+.s-dispute .who { font-size: 14px; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+/* Имя судьи и его оценка переносятся только вместе */
+.s-dispute .mark { white-space: nowrap; }
+.s-dispute .range { color: var(--warn); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.s-reset { padding-bottom: 40px; }
+.s-quiet {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--text-dim);
+  font: 13px var(--font-sans);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.s-quiet:hover { color: var(--warn); }
+
+@media (max-width: 700px) {
+  /* На телефоне отступ под номер съедает ширину — всё в одну колонку */
+  .s-crits { margin-left: 0; }
+  .s-crit { flex-direction: column; align-items: stretch; }
+  .s-radios { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .s-radios label { width: auto; }
+  .s-scale { gap: 8px; }
+  .s-scale .w { font-size: 11.5px; }
+  .s-team-head { flex-wrap: wrap; }
+  .s-btn { width: 100%; }
+  .s-dock-actions, .s-who-row { width: 100%; }
+  .s-code { width: 100%; }
+  .s-code input { width: 100%; }
+  .s-switch-results { margin-left: 0; }
+  .s-doors .st { display: none; }
+  /* Балл уходит под название команды и встаёт с ним в одну колонку */
+  .s-podium li { display: grid; grid-template-columns: auto 1fr; column-gap: 16px; }
+  .s-podium .score { grid-column: 2; margin-left: 0; }
+  .s-dispute { grid-template-columns: 1fr; }
+}

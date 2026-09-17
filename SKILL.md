@@ -97,5 +97,6 @@ description: Дизайн-система и правила этого сайта
 - `content/slides/*.md` — слайды (frontmatter: layout, title, aside, notes…)
 - `content/guide/*.md` — разделы гайда
 - `content/practice/*.md` — кейсы с промтами
+- `content/scores/scores.json` — жюри, команды и критерии для `/scores/`
 - `css/tokens.css` — все токены; `css/slides.css` — вёрстка слайдов
 - `js/slides.js` — движок презентации; `js/md.js` — markdown-парсер
