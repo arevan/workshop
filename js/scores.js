@@ -3,9 +3,8 @@
  *
  * Сайт статический, поэтому сданные листы хранятся во внешней базе
  * (Supabase). Страница ходит туда обычным fetch, без библиотек, и вызывает
- * три функции базы: сдать лист, получить итоги, очистить итоги. Каждая
- * сначала проверяет код судьи, а сами таблицы для сайта закрыты.
- * Схема базы — supabase/migrations/…_jury_scores.sql.
+ * три функции базы: сдать лист, получить итоги, очистить итоги. Сама
+ * таблица для сайта закрыта. Схема базы — supabase/migrations/…_jury_scores.sql.
  *
  * Пока судья заполняет лист, оценки лежат в его браузере (localStorage):
  * закрыл вкладку — ничего не потерял. В базу лист уходит по кнопке «Сдать».
@@ -32,6 +31,7 @@
   const values = scale.map((s) => s.value);
   const maxPerSheet = criteria.length * Math.max(...values);
   const tiebreak = criteria.find((c) => c.id === cfg.tiebreak) || criteria[0];
+  const admin = jurors.find((j) => j.admin);
   const REFRESH_MS = 30000; // как часто итоги подтягивают свежие листы
 
   // ---------- Мелкие помощники ----------
@@ -62,13 +62,9 @@
     set(key, value) {
       try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
     },
-    remove(key) {
-      try { localStorage.removeItem(key); } catch {}
-    },
   };
   const draftKey = (judgeId) => 'scores:draft:' + judgeId; // черновик листа
-  const codeKey = (judgeId) => 'scores:code:' + judgeId;   // код судьи на этом устройстве
-  const ME = 'scores:me';                                   // кто смотрит итоги
+  const ME = 'scores:me';                                   // кто сдавал лист с этого устройства
 
   function loadDraft(judgeId) {
     const d = store.get(draftKey(judgeId), {});
@@ -82,8 +78,7 @@
 
   // Коды ошибок задают SQL-функции (raise exception '…') — здесь их тексты.
   const API_ERRORS = {
-    wrong_code: 'Код не подошёл. ' + cfg.codeHint,
-    not_allowed: 'Очищать итоги может только организатор.',
+    bad_judge: 'База не узнала судью. Обновите страницу и сдайте лист ещё раз.',
     bad_scores: 'База не приняла лист. Обновите страницу и сдайте его ещё раз.',
     network: 'Нет связи с базой оценок. Проверьте интернет и попробуйте ещё раз — оценки сохранены в браузере.',
   };
@@ -91,8 +86,8 @@
     || `База ответила ошибкой (${err.message}). Напишите организатору.`;
 
   // Вызов функции базы: POST /rest/v1/rpc/имя, аргументы — JSON.
-  // Ключ публичный: он только пропускает к базе, права задают сами функции.
-  async function rpc(fn, args) {
+  // Ключ публичный: он только пропускает к базе, что можно — решают функции.
+  async function rpc(fn, args = {}) {
     let res;
     try {
       res = await fetch(`${storage.url}/rest/v1/rpc/${fn}`, {
@@ -149,7 +144,7 @@
             `<span class="st">${state}</span><span class="arr">→</span></a>`;
         }).join('')}
         <a href="#results" class="s-doors-results"><span class="t">Итоги</span>` +
-          `<span class="st">только для жюри</span><span class="arr">→</span></a>
+          `<span class="st"></span><span class="arr">→</span></a>
       </nav>`;
   }
 
@@ -219,14 +214,7 @@
           <span class="s-missing" id="missing"></span>
           <span class="s-error" id="sheet-error" role="alert"></span>
         </div>
-        <div class="s-dock-actions">
-          <label class="s-code" id="code-wrap" hidden>
-            <span>Код судьи</span>
-            <input id="code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters"
-              spellcheck="false" placeholder="XXXX-XXXX" maxlength="20">
-          </label>
-          <button type="button" class="s-btn" id="submit"></button>
-        </div>
+        <button type="button" class="s-btn" id="submit"></button>
       </div>`;
 
     updateSheetStatus();
@@ -257,13 +245,8 @@
     const progress = document.getElementById('progress');
     const hint = document.getElementById('missing');
     const btn = document.getElementById('submit');
-    const submitted = sheet.submittedAt && !sheet.changed;
-    const hasCode = Boolean(store.get(codeKey(sheetJudge.id), ''));
 
-    // Поле для кода — только пока код на этом устройстве не подтверждён базой.
-    document.getElementById('code-wrap').hidden = !apiReady || hasCode || submitted;
-
-    if (submitted) {
+    if (sheet.submittedAt && !sheet.changed) {
       progress.textContent = 'Лист сдан ' + dateOf(sheet.submittedAt);
       hint.textContent = 'Оценки в общих итогах. Поменяете оценку — лист нужно будет сдать заново.';
       btn.textContent = 'Открыть итоги';
@@ -271,11 +254,9 @@
       return;
     }
 
-    if (sheet.submittedAt) {
-      progress.textContent = 'Есть правки после сдачи';
-    } else {
-      progress.textContent = `Оценено ${done} из ${teams.length} ${plural(teams.length, 'команды', 'команд', 'команд')}`;
-    }
+    progress.textContent = sheet.submittedAt
+      ? 'Есть правки после сдачи'
+      : `Оценено ${done} из ${teams.length} ${plural(teams.length, 'команды', 'команд', 'команд')}`;
     if (!apiReady) {
       hint.textContent = 'База оценок ещё не подключена — сдать лист пока нельзя.';
     } else if (missing.length === teams.length && isEmpty(sheet)) {
@@ -283,7 +264,7 @@
     } else if (missing.length) {
       hint.textContent = 'Осталось: ' + missing.join(', ');
     } else {
-      hint.textContent = hasCode ? 'Все оценки на месте.' : 'Все оценки на месте. Введите код судьи и сдайте лист. ' + cfg.codeHint;
+      hint.textContent = 'Все оценки на месте.';
     }
     btn.textContent = sending ? 'Отправляем…' : sheet.submittedAt ? 'Сдать заново' : 'Сдать лист';
     btn.disabled = sending || !apiReady || missing.length > 0;
@@ -318,20 +299,11 @@
       return;
     }
     const judge = sheetJudge;
-    const input = document.getElementById('code');
-    const code = store.get(codeKey(judge.id), '') || input.value.trim();
-    if (!code) {
-      showSheetError('Введите код судьи. ' + cfg.codeHint);
-      input.focus();
-      return;
-    }
-
     sending = true;
     showSheetError('');
     updateSheetStatus();
     try {
-      const at = await rpc('jury_submit', { p_judge: judge.id, p_code: code, p_scores: cleanScores(sheet.scores) });
-      store.set(codeKey(judge.id), code);
+      const at = await rpc('jury_submit', { p_judge: judge.id, p_scores: cleanScores(sheet.scores) });
       store.set(ME, judge.id);
       if (sheetJudge !== judge) return; // пока ждали ответ, судья ушёл на другой экран
       sheet.submittedAt = Date.parse(at) || Date.now();
@@ -340,7 +312,6 @@
       showMine();
       document.getElementById('mine').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
-      if (err.message === 'wrong_code') store.remove(codeKey(judge.id));
       if (sheetJudge === judge) showSheetError(errorText(err));
     } finally {
       sending = false;
@@ -358,26 +329,21 @@
     updateSheetStatus();
   }
 
-  // Сверяем лист с базой, если код на этом устройстве уже известен:
+  // Сверяем лист с базой:
   // — черновик пуст, а в базе лист есть (судья сдавал с другого устройства) —
   //   подтягиваем его;
   // — черновик помечен сданным, а в базе листа нет (итоги очистили) —
   //   снимаем отметку, оценки остаются, лист можно сдать снова.
   async function syncSheet(judge) {
-    const code = store.get(codeKey(judge.id), '');
-    if (!apiReady || !code) return;
+    if (!apiReady) return;
     let rows;
     try {
-      rows = await rpc('jury_results', { p_judge: judge.id, p_code: code });
-    } catch (err) {
-      if (err.message === 'wrong_code') {
-        store.remove(codeKey(judge.id));
-        if (sheetJudge === judge) updateSheetStatus();
-      }
+      rows = await rpc('jury_results');
+    } catch {
       return;
     }
     if (sheetJudge !== judge || sending) return;
-    const own = rows.find((r) => r.judge_id === judge.id);
+    const own = (rows || []).find((r) => r.judge_id === judge.id);
 
     if (own && own.scores && isEmpty(sheet)) {
       store.set(draftKey(judge.id), { scores: own.scores, submittedAt: Date.parse(own.submitted_at), changed: false });
@@ -439,49 +405,13 @@
     refreshTimer = null;
   }
 
-  // «Кто вы?» — итоги видят только судьи, поэтому сначала код.
-  function renderWho(error) {
-    stopRefresh();
-    const last = store.get(ME, '');
-    root.innerHTML = header('results') + `
-      <section class="s-block">
-        <h2 class="s-h2">Кто вы?</h2>
-        <p class="s-text">Итоги видят только судьи. Выберите себя и введите код судьи. ${esc(cfg.codeHint)}</p>
-        <form class="s-who" id="who-form" autocomplete="off">
-          <fieldset class="s-who-names">
-            <legend class="s-kicker">Судья</legend>
-            ${jurors.map((j) => `
-              <label><input type="radio" name="who" id="who-${j.id}" value="${j.id}"${j.id === last ? ' checked' : ''} required>
-              <span>${esc(j.name)}</span></label>`).join('')}
-          </fieldset>
-          <div class="s-who-row">
-            <label class="s-code">
-              <span>Код судьи</span>
-              <input id="who-code" type="text" autocomplete="off" autocapitalize="characters"
-                spellcheck="false" placeholder="XXXX-XXXX" maxlength="20" required>
-            </label>
-            <button type="submit" class="s-btn">Показать итоги</button>
-          </div>
-          <p class="s-error" role="alert">${error ? esc(error) : ''}</p>
-        </form>
-      </section>`;
-  }
-
   async function renderResults({ quiet = false } = {}) {
     sheet = null;
     sheetJudge = null;
     if (!apiReady) {
-      stopRefresh();
       root.innerHTML = header('results') + `
         <section class="s-block"><h2 class="s-h2">База не подключена</h2>
         <p class="s-text">Итоги появятся, когда в scores.json будет указан адрес базы оценок.</p></section>`;
-      return;
-    }
-
-    const me = jurorById(store.get(ME, ''));
-    const code = me && store.get(codeKey(me.id), '');
-    if (!me || !code) {
-      renderWho(null);
       return;
     }
 
@@ -489,14 +419,9 @@
     if (!quiet) root.innerHTML = header('results') + '<p class="s-text">Загружаем итоги…</p>';
     let rows;
     try {
-      rows = await rpc('jury_results', { p_judge: me.id, p_code: code });
+      rows = await rpc('jury_results');
     } catch (err) {
       if (token !== resultsToken || location.hash !== '#results') return;
-      if (err.message === 'wrong_code') {
-        store.remove(codeKey(me.id));
-        renderWho(errorText(err));
-        return;
-      }
       if (quiet) return; // фоновое обновление не сработало — оставляем то, что уже на экране
       root.innerHTML = header('results') + `
         <section class="s-block">
@@ -507,59 +432,50 @@
     }
     if (token !== resultsToken || location.hash !== '#results') return;
 
-    drawResults(me, rows);
+    drawResults(rows);
     if (!refreshTimer) refreshTimer = setInterval(() => {
       if (!document.hidden) renderResults({ quiet: true });
     }, REFRESH_MS);
   }
 
-  function drawResults(me, rows) {
-    // Из базы могут прийти только известные судьи — остальное отбрасываем.
-    const submitted = {};
-    for (const r of rows || []) {
-      if (jurorById(r.judge_id)) submitted[r.judge_id] = { scores: r.scores, submittedAt: Date.parse(r.submitted_at) };
-    }
+  function drawResults(rows) {
+    // Из базы берём только известных судей и только объекты с оценками.
     const sheets = {};
-    for (const [id, s] of Object.entries(submitted)) {
-      if (s.scores && typeof s.scores === 'object') sheets[id] = s;
+    for (const r of rows || []) {
+      if (jurorById(r.judge_id) && r.scores && typeof r.scores === 'object') {
+        sheets[r.judge_id] = { scores: r.scores, submittedAt: Date.parse(r.submitted_at) };
+      }
     }
     const n = Object.keys(sheets).length;
     const nameOf = (id) => jurorById(id)?.name || 'Судья';
 
     const toolbar = `
       <div class="s-toolbar">
-        <span>Вы — ${esc(me.name)}</span>
         <span>Обновлено в ${timeOf(Date.now())}</span>
         <button type="button" class="s-quiet" id="refresh">Обновить</button>
-        <button type="button" class="s-quiet" id="switch-judge">Сменить судью</button>
       </div>`;
 
     const jurorsHtml = `
       <div class="s-jurors">
         ${jurors.map((j) => {
-          const s = submitted[j.id];
+          const s = sheets[j.id];
           return `<div class="s-juror"><span class="name">${esc(j.name)}</span>` +
             (s ? `<span class="st is-in">Лист сдан · ${dateOf(s.submittedAt)}</span>`
                : '<span class="st">Ещё не сдал</span>') + '</div>';
         }).join('')}
       </div>`;
 
-    const clearHtml = me.admin
+    // Кнопку очистки видит только устройство, с которого сдавал лист организатор.
+    const clearHtml = admin && store.get(ME, '') === admin.id
       ? `<section class="s-block s-reset">
           <button type="button" class="s-quiet" id="clear-results">Удалить все сданные листы</button>
         </section>` : '';
 
-    // Свой лист не сдан — база не отдала чужих баллов, показываем только кто сдал.
-    if (!submitted[me.id]) {
+    if (!n) {
       root.innerHTML = header('results') + toolbar + `
         <section class="s-block">
-          <h2 class="s-h2">Сначала — свой лист</h2>
-          <p class="s-text">Итоги откроются, когда вы сдадите свои оценки: так чужие баллы
-          не подсказывают ваши.</p>
-          <p class="s-text"><a class="s-link-text" href="#${me.id}">Перейти к своему листу →</a></p>
-        </section>
-        <section class="s-block">
-          <h2 class="s-h2">Листы жюри</h2>
+          <h2 class="s-h2">Пока никто не сдал лист</h2>
+          <p class="s-text">Итоги появятся здесь, как только первый судья сдаст оценки.</p>
           ${jurorsHtml}
         </section>` + clearHtml;
       return;
@@ -655,16 +571,13 @@
   }
 
   async function clearResults(button) {
-    const me = jurorById(store.get(ME, ''));
-    const code = me && store.get(codeKey(me.id), '');
-    if (!me || !code) return;
     if (!confirm('Удалить все сданные листы из базы? Судьям придётся сдать их заново. Черновики в браузерах останутся.')) return;
     button.disabled = true;
     try {
-      await rpc('jury_clear', { p_judge: me.id, p_code: code });
+      await rpc('jury_clear');
       // Свой черновик на этом устройстве тоже больше не «сдан».
-      const own = loadDraft(me.id);
-      if (own.submittedAt) store.set(draftKey(me.id), { ...own, submittedAt: 0, changed: false });
+      const own = loadDraft(admin.id);
+      if (own.submittedAt) store.set(draftKey(admin.id), { ...own, submittedAt: 0, changed: false });
       renderResults();
     } catch (err) {
       button.disabled = false;
@@ -684,34 +597,11 @@
     markChanged();
   });
 
-  root.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && e.target.id === 'code') {
-      e.preventDefault();
-      if (!document.getElementById('submit').disabled) submitSheet();
-    }
-  });
-
-  root.addEventListener('submit', (e) => {
-    if (e.target.id !== 'who-form') return;
-    e.preventDefault();
-    const form = e.target;
-    const who = form.querySelector('input[name="who"]:checked');
-    const code = form.querySelector('#who-code').value.trim();
-    if (!who || !code) return;
-    store.set(ME, who.value);
-    store.set(codeKey(who.value), code);
-    renderResults();
-  });
-
   root.addEventListener('click', (e) => {
     const target = e.target.closest('button');
     if (!target) return;
     if (target.id === 'submit') submitSheet();
     if (target.id === 'refresh' || target.id === 'retry') renderResults({ quiet: target.id === 'refresh' });
-    if (target.id === 'switch-judge') {
-      store.remove(ME);
-      renderWho(null);
-    }
     if (target.id === 'clear-results') clearResults(target);
   });
 

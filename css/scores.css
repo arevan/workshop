@@ -257,32 +257,11 @@
 .s-error { font-size: 13.5px; line-height: 1.45; color: var(--warn); }
 .s-error:empty { display: none; }
 
-.s-dock-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
-
-/* Код судьи: моноширинный, чтобы 0 и O, 1 и I не путались */
-.s-code { display: grid; gap: 6px; }
-.s-code span { font-size: 12px; color: var(--text-dim); }
-.s-code input {
-  width: 160px;
-  height: 46px;
-  padding: 0 14px;
-  background: var(--surface);
-  border: 1px solid var(--hair);
-  border-radius: 10px;
-  color: var(--text);
-  font: 500 15px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.s-code input::placeholder { color: var(--text-dim); }
-.s-code input:focus { outline: none; border-color: var(--text-muted); }
-
 .s-btn {
   appearance: none;
   border: 0;
   border-radius: 10px;
-  height: 46px;
-  padding: 0 24px;
+  padding: 13px 24px;
   background: var(--text);
   color: var(--bg);
   font: 600 15px var(--font-sans);
@@ -304,28 +283,6 @@
   font-size: 13.5px;
   color: var(--text-dim);
 }
-
-.s-link-text {
-  color: var(--text);
-  border-bottom: 1px solid var(--text-dim);
-  transition: color 0.15s, border-color 0.15s;
-}
-.s-link-text:hover { color: var(--accent); border-bottom-color: var(--accent); }
-
-.s-who { display: grid; gap: 28px; max-width: 560px; }
-.s-who-names { margin: 0; padding: 0; border: 0; }
-.s-who-names label {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding-block: 12px;
-  border-bottom: 1px solid var(--hair);
-  font-size: 20px;
-  font-weight: 300;
-  cursor: pointer;
-}
-.s-who-names input { width: 18px; height: 18px; margin: 0; accent-color: var(--text); }
-.s-who-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
 
 /* Пьедестал: крупно, как двери хаба. Жёлтая только цифра первого места. */
 .s-podium { list-style: none; margin: 0 0 24px; padding: 0; }
@@ -451,9 +408,6 @@
   .s-scale .w { font-size: 11.5px; }
   .s-team-head { flex-wrap: wrap; }
   .s-btn { width: 100%; }
-  .s-dock-actions, .s-who-row { width: 100%; }
-  .s-code { width: 100%; }
-  .s-code input { width: 100%; }
   .s-switch-results { margin-left: 0; }
   .s-doors .st { display: none; }
   /* Балл уходит под название команды и встаёт с ним в одну колонку */
